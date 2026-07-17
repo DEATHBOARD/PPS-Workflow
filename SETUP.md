@@ -145,7 +145,7 @@ Ensure your HTML has these element IDs for the JavaScript to work:
 
 ## Step 5: Deploy as Google Apps Script Web App
 
-### 5.1 Create HTML Wrapper (Optional - For Full Integration)
+### 5.1 Option A: Host Entire App in Google Apps Script
 
 If you want to host the entire app in Google Apps Script:
 
@@ -154,27 +154,41 @@ If you want to host the entire app in Google Apps Script:
    - Name it: `index.html`
    
 2. Copy your HTML content into this file
-3. Replace the `<head>` section with:
-```html
-<?!= include('integration.js'); ?>
-```
-
-4. Update `backend.gs` `doGet()` function:
+3. Update `backend.gs` `doGet()` function:
 ```javascript
 function doGet(e) {
-  return HtmlService.createTemplateFromFile('index.html')
-    .evaluate()
+  return HtmlService.createHtmlOutputFromFile('index.html')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 ```
 
-### 5.2 Deploy Updated Version
+4. Save and redeploy
 
-1. Click **Deploy** → **Manage deployments**
-2. Click the pencil icon next to your web app deployment
-3. Update the version to latest
-4. Click **Deploy**
-5. Copy the new deployment URL
+### 5.2 Option B: Host HTML Separately, Call Backend via API
+
+1. Keep your HTML hosted separately (GitHub Pages, your server, etc.)
+2. Add this to your `integration.js` (already included):
+```javascript
+function callBackend(action, params = {}) {
+  return new Promise((resolve, reject) => {
+    google.script.run
+      .withSuccessHandler(resolve)
+      .withFailureHandler(reject)
+      .processRequest(action, params);
+  });
+}
+```
+
+3. Deploy Apps Script as Web App
+4. Your HTML can call the backend via the deployment URL
+
+### 5.3 Deploy/Redeploy
+
+1. Click **Deploy** → **New deployment** (or **Manage deployments** to update)
+2. Select **Web app**
+3. Execute as: Your account
+4. Who has access: **Anyone** (for testing) or specific users
+5. Click **Deploy**
 
 ---
 
@@ -184,7 +198,11 @@ function doGet(e) {
 
 1. Open the deployed web app
 2. Go to **"Data Entry"** tab
-3. Fill in a test record
+3. Fill in a test record:
+   - Subject: "Test Record"
+   - Status: "Pending"
+   - Remarks: "Testing"
+   - Drafter: "Your Name"
 4. Click **"Submit"**
 5. Check your Google Sheet - the record should appear in the "Records" sheet
 
@@ -200,6 +218,17 @@ function doGet(e) {
 2. All records should display
 3. Test search and filter functionality
 4. Test Edit/Delete buttons
+
+### 6.4 Debug Issues
+
+**Open Developer Console:**
+- Press `F12` in your browser
+- Go to **Console** tab
+- Look for any error messages
+
+**Check Apps Script Logs:**
+- In Apps Script editor, click **View** → **Logs**
+- Run functions manually to see execution logs
 
 ---
 
@@ -262,13 +291,15 @@ function doGet(e) {
 1. Ensure deployment is set to "Anyone" or specific users
 2. Check that deployment ID is correct
 3. Redeploy with latest version
+4. Clear browser cache (Ctrl+Shift+Delete)
 
 ### Issue: "Spreadsheet not found"
 
 **Solution:**
-1. Verify `SPREADSHEET_ID` in `backend.gs` is correct
+1. Verify `SPREADSHEET_ID` in `backend.gs` is correct: `1CLvPRWFP8rim79dCUhntBz7cbi2-pxvl_k5agqzHdHs`
 2. Ensure the Google Sheet is shared with your Google account
 3. Run `initializeSheets()` function manually
+4. Check that you have edit access to the sheet
 
 ### Issue: Records not saving
 
@@ -277,14 +308,23 @@ function doGet(e) {
 2. Verify "Records" sheet exists in Google Sheet
 3. Ensure all required columns are present
 4. Check Apps Script logs: **View** → **Logs**
+5. Run `initializeSheets()` to recreate sheets
 
 ### Issue: Permission errors
 
 **Solution:**
 1. In Apps Script, go to **Project Settings**
-2. Check that the Google Sheet is accessible
+2. Check that the Google Sheet is accessible to your account
 3. Manually authorize each function by running it once
-4. Grant all permission prompts
+4. Grant all permission prompts that appear
+5. Redeploy with fresh authorization
+
+### Issue: "google.script is not defined"
+
+**Solution:**
+1. Make sure you're running within Google Apps Script deployment
+2. Add `integration.js` to your HTML via `<script src="integration.js"></script>`
+3. Or include the code directly in a `<script>` tag in your HTML
 
 ---
 
@@ -294,11 +334,31 @@ function doGet(e) {
 - Currently set to "Anyone" access (for testing)
 
 ### For Production
-1. Change deployment to specific users/domain
-2. Add authentication to verify user identity
-3. Implement row-level permissions
-4. Add audit logging for changes
-5. Restrict sensitive operations
+1. **Change deployment to specific users/domain:**
+   - Go to deployment settings
+   - Select "Only yourself" or specific emails/domains
+
+2. **Add authentication:**
+   ```javascript
+   function getCurrentUser() {
+     return Session.getActiveUser().getEmail();
+   }
+   ```
+
+3. **Implement row-level permissions:**
+   - Add user email column to records
+   - Filter records by current user
+
+4. **Add audit logging:**
+   ```javascript
+   function logAction(action, recordId, userId) {
+     // Log changes to separate sheet
+   }
+   ```
+
+5. **Restrict sensitive operations:**
+   - Limit delete permissions
+   - Require approval for status changes
 
 ---
 
@@ -306,24 +366,26 @@ function doGet(e) {
 
 ### Adding Custom Status Values
 
-Edit `backend.gs` `getDashboardStats()` function:
+1. Edit `backend.gs` `getDashboardStats()` function:
 ```javascript
 if (status === 'your-new-status') yourCounter++;
 ```
 
-Edit `integration.js` `getStatusClass()` function:
+2. Edit `integration.js` `getStatusClass()` function:
 ```javascript
 'Your New Status': 'status-your-class',
 ```
 
-Add CSS in `index.html`:
+3. Add CSS in `index.html`:
 ```css
 .status-your-class { background:#yourcolor; color:#yourtext; }
 ```
 
+4. Update status options in forms
+
 ### Adding New Columns
 
-1. **Google Sheet:** Add new header column
+1. **Google Sheet:** Add new header column to "Records" sheet
 2. **backend.gs:** Update column references in functions
 3. **integration.js:** Update `displayRecordsTable()` to show new column
 4. **index.html:** Add form field for new column in data entry
@@ -337,7 +399,21 @@ function scheduleTask() {
 }
 ```
 
-Then set up time-based trigger in Apps Script editor.
+Then set up time-based trigger:
+1. In Apps Script, click **"Triggers"** (alarm icon)
+2. Click **"Create new trigger"**
+3. Select your function
+4. Choose frequency
+
+### Adding QR Code Generation
+
+Add to `backend.gs`:
+```javascript
+function generateQRCode(recordId) {
+  const qrURL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${recordId}`;
+  return qrURL;
+}
+```
 
 ---
 
@@ -351,6 +427,7 @@ const result = await callBackend('addRecord', {
   remarks: 'Test remarks',
   drafter: 'John Doe'
 });
+console.log('Record ID:', result.id);
 ```
 
 ### Search
@@ -358,6 +435,7 @@ const result = await callBackend('addRecord', {
 const results = await callBackend('searchRecords', {
   query: 'important'
 });
+console.log('Found:', results.length, 'records');
 ```
 
 ### Update
@@ -371,6 +449,19 @@ const result = await callBackend('updateRecord', {
 });
 ```
 
+### Get by Status
+```javascript
+const completed = await callBackend('getRecordsByStatus', {
+  status: 'Completed'
+});
+```
+
+### Export
+```javascript
+const csv = await callBackend('exportRecordsCSV');
+// csv now contains CSV formatted data
+```
+
 ---
 
 ## Files in Repository
@@ -382,15 +473,45 @@ const result = await callBackend('updateRecord', {
 
 ---
 
+## Quick Start Checklist
+
+- [ ] Create "Records" and "Settings" sheets in Google Sheet
+- [ ] Create Google Apps Script project
+- [ ] Add backend.gs with correct SPREADSHEET_ID
+- [ ] Run initializeSheets() function
+- [ ] Deploy as Web App
+- [ ] Add integration.js to HTML
+- [ ] Test data entry
+- [ ] Test dashboard stats
+- [ ] Test records table
+- [ ] Test search/filter
+- [ ] Test edit/delete
+
+---
+
 ## Support & Resources
 
 - [Google Apps Script Documentation](https://developers.google.com/apps-script)
 - [Google Sheets API Reference](https://developers.google.com/sheets/api)
 - [Bootstrap 5 Documentation](https://getbootstrap.com/docs/5.0)
 - [Font Awesome Icons](https://fontawesome.com/icons)
+- [JavaScript Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
 
 ---
 
-**Last Updated:** July 17, 2026
-**Version:** 1.0
-**Status:** Production Ready
+## Tips & Best Practices
+
+1. **Performance:** Cache data in browser when possible to reduce API calls
+2. **Error Handling:** Always wrap backend calls in try-catch blocks
+3. **User Feedback:** Always show loading state and success/error messages
+4. **Data Validation:** Validate on frontend before sending to backend
+5. **Logging:** Check Apps Script logs frequently during development
+6. **Testing:** Test with different data types and edge cases
+7. **Documentation:** Add comments to custom functions for team reference
+
+---
+
+**Last Updated:** July 17, 2026  
+**Version:** 1.0  
+**Status:** Production Ready  
+**Spreadsheet ID:** `1CLvPRWFP8rim79dCUhntBz7cbi2-pxvl_k5agqzHdHs`
