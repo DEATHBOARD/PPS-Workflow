@@ -1,35 +1,4349 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
+  <base target="_top">
+
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <meta
-    http-equiv="refresh"
-    content="0; url=https://script.google.com/macros/s/AKfycbym0kzaCLpikbsp57jIvP2yccwPZJxHZ6QNqnPeJXWAR92V054ivJeRlya-F5Qz-aKpCA/exec"
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    rel="stylesheet"
   >
 
-  <title>PPS Records System</title>
+  <style>
+    :root {
+      --sidebar-width: 250px;
+      --sidebar-mini-width: 76px;
+      --nav-height: 64px;
+      --primary: #1d4ed8;
+      --primary-dark: #173ea5;
+      --sidebar-bg: #0f172a;
+      --sidebar-hover: #1e293b;
+      --page-bg: #f4f7fb;
+      --border: #dbe3ee;
+      --text: #172033;
+      --muted: #64748b;
+    }
 
-  <script>
-    const PPS_WEB_APP_URL =
-      "https://script.google.com/macros/s/AKfycbym0kzaCLpikbsp57jIvP2yccwPZJxHZ6QNqnPeJXWAR92V054ivJeRlya-F5Qz-aKpCA/exec";
+    * {
+      box-sizing: border-box;
+    }
 
-    window.location.replace(PPS_WEB_APP_URL);
-  </script>
+    body {
+      margin: 0;
+      background: var(--page-bg);
+      color: var(--text);
+      font-family: Inter, Arial, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: var(--sidebar-bg);
+      color: #fff;
+      z-index: 1040;
+      transition: width .22s ease, transform .22s ease;
+      box-shadow: 4px 0 18px rgba(15, 23, 42, .12);
+    }
+
+    .sidebar-brand {
+      height: var(--nav-height);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 18px;
+      border-bottom: 1px solid rgba(255,255,255,.09);
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .brand-icon {
+      width: 39px;
+      height: 39px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #2563eb, #60a5fa);
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      font-size: 18px;
+    }
+
+    .brand-text {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: .2px;
+    }
+
+    .sidebar-menu {
+      padding: 14px 10px;
+    }
+
+    .nav-item-btn {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 12px 14px;
+      margin-bottom: 5px;
+      border-radius: 10px;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      transition: .18s ease;
+    }
+
+    .nav-item-btn:hover,
+    .nav-item-btn.active {
+      background: var(--sidebar-hover);
+      color: #fff;
+    }
+
+    .nav-item-btn.active {
+      box-shadow: inset 3px 0 0 #60a5fa;
+    }
+
+    .nav-item-btn i {
+      width: 24px;
+      text-align: center;
+      flex: 0 0 auto;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: var(--sidebar-width);
+      right: 0;
+      height: var(--nav-height);
+      z-index: 1030;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 22px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      transition: left .22s ease;
+    }
+
+    .content {
+      margin-left: var(--sidebar-width);
+      padding: calc(var(--nav-height) + 24px) 24px 30px;
+      min-height: 100vh;
+      transition: margin-left .22s ease;
+    }
+
+    body.sidebar-mini .sidebar {
+      width: var(--sidebar-mini-width);
+    }
+
+    body.sidebar-mini .topbar {
+      left: var(--sidebar-mini-width);
+    }
+
+    body.sidebar-mini .content {
+      margin-left: var(--sidebar-mini-width);
+    }
+
+    body.sidebar-mini .brand-text,
+    body.sidebar-mini .nav-item-btn span {
+      opacity: 0;
+      width: 0;
+      pointer-events: none;
+    }
+
+    body.sidebar-mini .sidebar-brand {
+      justify-content: center;
+      padding: 0;
+    }
+
+    body.sidebar-mini .nav-item-btn {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .page-section {
+      display: none;
+    }
+
+    .page-section.active {
+      display: block;
+      animation: fadeIn .18s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: .55; transform: translateY(3px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .page-title {
+      font-weight: 800;
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .page-subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 3px;
+    }
+
+    .card-clean {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 5px 18px rgba(15, 23, 42, .045);
+    }
+
+    .stat-card {
+      border: 0;
+      border-radius: 15px;
+      box-shadow: 0 7px 22px rgba(15, 23, 42, .07);
+      overflow: hidden;
+      height: 100%;
+    }
+
+    .stat-card .card-body {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .45px;
+    }
+
+    .stat-value {
+      font-size: 30px;
+      font-weight: 850;
+      margin-top: 4px;
+      line-height: 1;
+    }
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 21px;
+    }
+
+    .form-label {
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .form-control,
+    .form-select {
+      border-color: #cfd8e5;
+      min-height: 42px;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 .22rem rgba(37, 99, 235, .12);
+    }
+
+    .required::after {
+      content: " *";
+      color: #dc2626;
+    }
+
+    .table-responsive {
+      border-radius: 11px;
+    }
+
+    .records-table {
+      width: 100%;
+      min-width: 1180px;
+      margin-bottom: 0;
+      font-size: 12px;
+    }
+
+    /* Keep every table item at 12px. */
+    .records-table,
+    .records-table th,
+    .records-table td,
+    .records-table input,
+    .records-table select,
+    .records-table button,
+    .records-table a,
+    .records-table span {
+      font-size: 12px !important;
+    }
+
+    .records-table th {
+      background: #f1f5f9;
+      color: #0f172a;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      line-height: 1.2;
+      padding: 8px 6px;
+      border-bottom: 1px solid #cbd5e1;
+      font-weight: 800;
+      vertical-align: middle;
+      text-align: center;
+    }
+
+    .records-table td {
+      padding: 8px 6px;
+      vertical-align: top;
+      border-color: #e2e8f0;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      line-height: 1.25;
+    }
+
+    .records-table .column-filter-row th {
+      background: #ffffff;
+      padding: 5px 4px;
+      vertical-align: middle;
+      border-bottom: 1px solid #cbd5e1;
+    }
+
+    .column-filter-control {
+      width: 100%;
+      min-width: 0;
+      min-height: 32px !important;
+      height: 32px;
+      padding: 3px 5px;
+      font-size: 12px !important;
+      font-weight: 500;
+      line-height: 1.15;
+      text-overflow: ellipsis;
+    }
+
+    .column-filter-control::placeholder {
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    .column-filter-empty {
+      min-width: 0;
+    }
+
+    .subject-cell {
+      min-width: 210px;
+      max-width: 300px;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      line-height: 1.25;
+    }
+
+    .remarks-cell {
+      min-width: 150px;
+      max-width: 240px;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .action-stack {
+      display: grid;
+      gap: 4px;
+      min-width: 105px;
+    }
+
+    .action-stack .btn {
+      font-size: 12px !important;
+      font-weight: 700;
+      text-align: center;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.15;
+      padding: 5px 6px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      max-width: 100%;
+      border-radius: 999px;
+      padding: 4px 7px;
+      font-size: 12px !important;
+      font-weight: 800;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      text-align: center;
+      line-height: 1.15;
+    }
+
+    .qr-code-box {
+      width: 230px;
+      min-height: 230px;
+      margin: 0 auto;
+      padding: 12px;
+      display: grid;
+      place-items: center;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+    }
+
+    .qr-code-box img,
+    .qr-code-box canvas,
+    .routing-qr-code img,
+    .routing-qr-code canvas {
+      display: block;
+      max-width: 100%;
+      height: auto !important;
+      margin: auto;
+    }
+
+    .qr-link-input {
+      font-size: 12px;
+    }
+
+    .qr-scanner-shell {
+      position: relative;
+      width: 100%;
+      padding: 8px;
+      background: #0f172a;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    #qrReader {
+      position: relative;
+      width: 100%;
+      max-width: 620px;
+      min-height: 280px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 9px;
+      overflow: hidden;
+    }
+
+    #qrReader video {
+      display: block;
+      width: 100% !important;
+      height: auto !important;
+      max-height: 68vh;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #000;
+    }
+
+    #qrReader canvas {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+
+    #qrReader button,
+    #qrReader select,
+    #qrReader span,
+    #qrReader div {
+      font-size: 12px !important;
+    }
+
+    .qr-scanner-status {
+      min-height: 22px;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .qr-camera-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .qr-camera-controls .btn {
+      font-size: 12px;
+    }
+
+    .qr-camera-select {
+      min-width: 180px;
+      flex: 1 1 240px;
+    }
+
+    .qr-camera-help {
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    #qrFileReaderHidden {
+      position: fixed;
+      left: -99999px;
+      top: -99999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    @media (max-width: 575.98px) {
+      #qrScannerModal .modal-dialog {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      #qrScannerModal .modal-content {
+        min-height: 100vh;
+        border: 0;
+        border-radius: 0;
+      }
+
+      #qrScannerModal .modal-body {
+        padding: 12px;
+      }
+
+      #qrReader {
+        min-height: 235px;
+      }
+
+      #qrReader video {
+        max-height: 56vh;
+      }
+
+      .qr-camera-controls .btn {
+        flex: 1 1 calc(50% - 7px);
+      }
+
+      .qr-camera-select {
+        flex-basis: 100%;
+      }
+    }
+
+    .quick-track-summary {
+      border: 1px solid #dbe3ee;
+      border-radius: 12px;
+      background: #f8fafc;
+      padding: 13px;
+    }
+
+    .quick-track-subject {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.35;
+    }
+
+    .routing-form-preview .routing-header-tools {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .routing-form-preview .routing-qr-wrap {
+      width: 68px;
+      flex: 0 0 68px;
+      text-align: center;
+      font-size: 7px;
+      font-weight: 800;
+      line-height: 1.05;
+    }
+
+    .routing-form-preview .routing-qr-code {
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 3px;
+      display: grid;
+      place-items: center;
+      background: #fff;
+    }
+
+    .status-pending { background:#fef3c7; color:#92400e; }
+    .status-for-routing { background:#dbeafe; color:#1d4ed8; }
+    .status-on-process { background:#e0e7ff; color:#4338ca; }
+    .status-forwarded { background:#cffafe; color:#0e7490; }
+    .status-returned { background:#fee2e2; color:#b91c1c; }
+    .status-completed { background:#dcfce7; color:#166534; }
+    .status-default { background:#e2e8f0; color:#334155; }
+
+    .empty-state {
+      padding: 46px 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty-state i {
+      font-size: 42px;
+      opacity: .45;
+      margin-bottom: 12px;
+    }
+
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      place-items: center;
+      background: rgba(15, 23, 42, .35);
+      backdrop-filter: blur(2px);
+    }
+
+    .loading-overlay.show {
+      display: grid;
+    }
+
+    .loading-box {
+      background: #fff;
+      border-radius: 14px;
+      padding: 22px 28px;
+      min-width: 220px;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(0,0,0,.18);
+      font-weight: 700;
+    }
+
+    .mobile-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1035;
+      background: rgba(15,23,42,.55);
+    }
+
+    .settings-list .list-group-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+    }
+
+    .pagination .page-link {
+      color: var(--primary);
+    }
+
+    .pagination .page-item.active .page-link {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .truncate-url {
+      max-width: 110px;
+    }
+
+    .routing-preview-shell {
+      overflow-x: auto;
+      background: #e9edf3;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .routing-form-preview {
+      width: 980px;
+      min-height: 660px;
+      margin: 0 auto;
+      background: #fff;
+      color: #000;
+      padding: 22px 28px 24px;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      box-shadow: 0 3px 14px rgba(15, 23, 42, .12);
+    }
+
+    .routing-form-preview .tracking-box {
+      width: 270px;
+      margin-left: auto;
+      font-size: 10px;
+      line-height: 1.15;
+    }
+
+    .routing-form-preview .tracking-row {
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 5px;
+      align-items: end;
+    }
+
+    .routing-form-preview .tracking-document-row {
+      grid-template-columns: max-content 1fr;
+      margin-bottom: 1px;
+    }
+
+    .routing-form-preview .tracking-line {
+      min-height: 11px;
+      border-bottom: 1px solid #000;
+      color: #0645ad;
+      font-size: 9px;
+    }
+
+    .routing-form-preview .process-note {
+      margin: 18px 0 18px 48px;
+      font-size: 12px;
+      font-style: italic;
+    }
+
+    .routing-form-preview .subject-line {
+      margin: 0 0 3px 0;
+      font-weight: 700;
+      min-height: 18px;
+    }
+
+    .routing-form-preview .routing-main {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .routing-form-preview .routing-main,
+    .routing-form-preview .routing-main td,
+    .routing-form-preview .routing-main th {
+      border: 1px solid #000;
+    }
+
+    .routing-form-preview .routing-main td,
+    .routing-form-preview .routing-main th {
+      padding: 0;
+      vertical-align: middle;
+    }
+
+    .routing-form-preview .title-cell {
+      height: 48px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 800;
+      text-decoration: underline;
+    }
+
+    .routing-form-preview .warning-cell {
+      height: 48px;
+      padding: 4px 8px !important;
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.05;
+      text-align: left;
+    }
+
+    .routing-form-preview .nested-table {
+      width: 100%;
+      height: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .routing-form-preview .nested-table th,
+    .routing-form-preview .nested-table td {
+      border: 1px solid #000;
+      padding: 2px 4px;
+      text-align: center;
+      line-height: 1.05;
+      font-size: 12px;
+    }
+
+    .routing-form-preview .nested-table th {
+      font-weight: 700;
+      height: 28px;
+    }
+
+    .routing-form-preview .routing-left td {
+      height: 34px;
+      font-weight: 600;
+    }
+
+    .routing-form-preview .routing-left .blank-route td {
+      height: 30px;
+      font-weight: 400;
+    }
+
+    .routing-form-preview .routing-actions th {
+      height: 28px;
+      font-size: 11px;
+    }
+
+    .routing-form-preview .routing-actions td {
+      height: 21px;
+      padding: 1px 5px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .routing-form-preview .routing-actions .action-number {
+      width: 30px;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .routing-form-preview .red-check {
+      color: #c00000;
+      font-style: italic;
+    }
+
+    .routing-form-preview .remarks-label {
+      height: 20px;
+      padding: 2px 8px !important;
+      font-weight: 700;
+      text-decoration: underline;
+      text-align: left;
+    }
+
+    .routing-form-preview .remarks-area {
+      height: 92px;
+      padding: 6px 8px !important;
+      vertical-align: top !important;
+      white-space: pre-wrap;
+      text-align: left;
+    }
+
+    .routing-form-preview .drafter-line {
+      height: 22px;
+      padding: 2px 8px !important;
+      text-align: left;
+      font-style: italic;
+    }
+
+    .routing-form-preview .td-line {
+      margin: 2px 0 0 82px;
+      font-size: 11px;
+      font-style: italic;
+      font-weight: 700;
+    }
+
+    @media (max-width: 991.98px) {
+      .sidebar {
+        transform: translateX(-100%);
+        width: var(--sidebar-width) !important;
+      }
+
+      body.sidebar-mobile-open .sidebar {
+        transform: translateX(0);
+      }
+
+      body.sidebar-mobile-open .mobile-backdrop {
+        display: block;
+      }
+
+      .topbar {
+        left: 0 !important;
+      }
+
+      .content {
+        margin-left: 0 !important;
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      body.sidebar-mini .brand-text,
+      body.sidebar-mini .nav-item-btn span {
+        opacity: 1;
+        width: auto;
+      }
+
+      body.sidebar-mini .sidebar-brand {
+        justify-content: flex-start;
+        padding: 0 18px;
+      }
+
+      body.sidebar-mini .nav-item-btn {
+        justify-content: flex-start;
+        padding: 12px 14px;
+      }
+    }
+
+    @media (max-width: 575.98px) {
+      .topbar {
+        padding: 0 12px;
+      }
+
+      .page-title {
+        font-size: 21px;
+      }
+
+      .topbar-title {
+        display: none;
+      }
+    }
+  </style>
 </head>
 
 <body>
-  <main>
-    <h1>PPS Records System</h1>
-    <p>Opening the Records Management System...</p>
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-box">
+      <div class="spinner-border text-primary mb-3" role="status"></div>
+      <div id="loadingText">Please wait...</div>
+    </div>
+  </div>
 
-    <p>
-      <a href="https://script.google.com/macros/s/AKfycbym0kzaCLpikbsp57jIvP2yccwPZJxHZ6QNqnPeJXWAR92V054ivJeRlya-F5Qz-aKpCA/exec">
-        Click here if you are not redirected
-      </a>
-    </p>
+  <div class="mobile-backdrop" onclick="closeMobileSidebar()"></div>
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="fa-solid fa-folder-open"></i></div>
+      <div class="brand-text">Records System</div>
+    </div>
+
+    <div class="sidebar-menu">
+      <button class="nav-item-btn active" data-view="dashboard" onclick="showView('dashboard')">
+        <i class="fa-solid fa-chart-line"></i>
+        <span>Dashboard</span>
+      </button>
+
+      <button class="nav-item-btn" data-view="entry" onclick="showView('entry')">
+        <i class="fa-solid fa-file-circle-plus"></i>
+        <span>Data Entry</span>
+      </button>
+
+      <button class="nav-item-btn" data-view="records" onclick="showView('records')">
+        <i class="fa-solid fa-table-list"></i>
+        <span>Records Table</span>
+      </button>
+
+      <button class="nav-item-btn" data-view="settings" onclick="showView('settings')">
+        <i class="fa-solid fa-gear"></i>
+        <span>Settings</span>
+      </button>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn btn-light border" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <div class="topbar-title">
+        <div class="fw-bold" id="topbarTitle">Dashboard</div>
+        <div class="small text-secondary">Records Management and Routing</div>
+      </div>
+    </div>
+
+    <span class="badge rounded-pill text-bg-primary px-3 py-2">
+      <i class="fa-solid fa-user-shield me-1"></i> Admin
+    </span>
+  </header>
+
+  <main class="content">
+    <!-- DASHBOARD -->
+    <section id="view-dashboard" class="page-section active">
+      <div class="mb-4">
+        <h1 class="page-title">Dashboard</h1>
+        <div class="page-subtitle">Overview of your office records and document status.</div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+          <div class="card stat-card">
+            <div class="card-body">
+              <div>
+                <div class="stat-label">Total Records</div>
+                <div id="statTotal" class="stat-value">0</div>
+              </div>
+              <div class="stat-icon bg-primary-subtle text-primary">
+                <i class="fa-solid fa-folder-tree"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="card stat-card">
+            <div class="card-body">
+              <div>
+                <div class="stat-label">For Routing</div>
+                <div id="statForRouting" class="stat-value">0</div>
+              </div>
+              <div class="stat-icon bg-info-subtle text-info-emphasis">
+                <i class="fa-solid fa-route"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="card stat-card">
+            <div class="card-body">
+              <div>
+                <div class="stat-label">On Process</div>
+                <div id="statOnProcess" class="stat-value">0</div>
+              </div>
+              <div class="stat-icon bg-warning-subtle text-warning-emphasis">
+                <i class="fa-solid fa-spinner"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="card stat-card">
+            <div class="card-body">
+              <div>
+                <div class="stat-label">Completed</div>
+                <div id="statCompleted" class="stat-value">0</div>
+              </div>
+              <div class="stat-icon bg-success-subtle text-success">
+                <i class="fa-solid fa-circle-check"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-clean">
+        <div class="card-header bg-white border-0 pt-3 px-3 d-flex justify-content-between align-items-center">
+          <div>
+            <div class="fw-bold">Recent Records</div>
+            <div class="small text-secondary">Latest encoded documents</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="showView('records')">
+            View All
+          </button>
+        </div>
+        <div class="card-body pt-2">
+          <div id="recentRecords"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DATA ENTRY -->
+    <section id="view-entry" class="page-section">
+      <div class="mb-4">
+        <h1 class="page-title">Data Entry Form</h1>
+        <div class="page-subtitle">Encode a new document record. Target Date is optional.</div>
+      </div>
+
+      <div class="card card-clean">
+        <div class="card-body p-4">
+          <form id="recordForm">
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label">Ref No.</label>
+                <input id="refNoPreview" class="form-control bg-light" readonly>
+                <div class="form-text">Automatically resets to PPS-0001 every January 1.</div>
+              </div>
+
+              <div class="col-md-4">
+                <label for="recordDate" class="form-label required">Date</label>
+                <input id="recordDate" type="date" class="form-control" required>
+              </div>
+
+              <div class="col-md-5">
+                <label for="targetDate" class="form-label">Target Date</label>
+                <input id="targetDate" type="date" class="form-control">
+              </div>
+
+              <div class="col-12">
+                <label for="subject" class="form-label required">Subject</label>
+                <textarea
+                  id="subject"
+                  class="form-control"
+                  rows="3"
+                  maxlength="1000"
+                  required
+                  placeholder="Enter the complete subject of the document"
+                ></textarea>
+              </div>
+
+              <div class="col-md-6">
+                <label for="drafter" class="form-label required">Drafter</label>
+                <select id="drafter" class="form-select" required>
+                  <option value="">Select Drafter</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label for="status" class="form-label required">Status</label>
+                <select id="status" class="form-select" required>
+                  <option value="Pending">Pending</option>
+                  <option value="For Routing" selected>For Routing</option>
+                  <option value="On Process">On Process</option>
+                  <option value="Forwarded">Forwarded</option>
+                  <option value="Returned">Returned</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label for="remarks" class="form-label">Remarks</label>
+                <textarea
+                  id="remarks"
+                  class="form-control"
+                  rows="3"
+                  maxlength="1000"
+                  placeholder="Optional remarks"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-4">
+              <button type="submit" class="btn btn-primary px-4">
+                <i class="fa-solid fa-floppy-disk me-2"></i>Save Record
+              </button>
+
+              <button type="button" class="btn btn-outline-secondary" onclick="resetRecordForm()">
+                <i class="fa-solid fa-rotate-left me-2"></i>Reset
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- RECORDS -->
+    <section id="view-records" class="page-section">
+      <div class="mb-4">
+        <h1 class="page-title">Records Table</h1>
+        <div class="page-subtitle">Search, filter, edit, print, upload an approved memo, or delete a record.</div>
+      </div>
+
+      <div class="card card-clean">
+        <div class="card-body">
+          <div class="row g-2 align-items-end mb-3">
+            <div class="col-md-4">
+              <label class="form-label">Search</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input
+                  id="searchInput"
+                  class="form-control"
+                  placeholder="Ref no., subject, drafter, remarks..."
+                  oninput="applyFilters()"
+                >
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">Status</label>
+              <select id="statusFilter" class="form-select" onchange="applyFilters()">
+                <option value="">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="For Routing">For Routing</option>
+                <option value="On Process">On Process</option>
+                <option value="Forwarded">Forwarded</option>
+                <option value="Returned">Returned</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">Drafter</label>
+              <select id="drafterFilter" class="form-select" onchange="applyFilters()">
+                <option value="">All Drafters</option>
+              </select>
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">Rows</label>
+              <select id="pageSize" class="form-select" onchange="changePageSize()">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+
+            <div class="col-12 d-flex flex-wrap justify-content-end gap-2 mt-2">
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                onclick="openQrScanner()"
+              >
+                <i class="fa-solid fa-camera me-1"></i>
+                Scan QR
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm"
+                onclick="clearAllFilters()"
+              >
+                <i class="fa-solid fa-filter-circle-xmark me-1"></i>
+                Clear Filters
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive border">
+            <table class="table table-hover records-table">
+              <thead>
+                <tr>
+                  <th>Ref No.</th>
+                  <th>Subject</th>
+                  <th>Date</th>
+                  <th>Target Date</th>
+                  <th>Drafter</th>
+                  <th>Status</th>
+                  <th>Remarks</th>
+                  <th>Approved PDF</th>
+                  <th>Date Encoded</th>
+                  <th>Action</th>
+                </tr>
+
+                <tr class="column-filter-row">
+                  <th>
+                    <input
+                      id="refNoColumnFilter"
+                      class="form-control column-filter-control"
+                      placeholder="Filter ref no."
+                      aria-label="Filter by reference number"
+                      oninput="applyFilters()"
+                    >
+                  </th>
+
+                  <th>
+                    <input
+                      id="subjectColumnFilter"
+                      class="form-control column-filter-control"
+                      placeholder="Filter subject"
+                      aria-label="Filter by subject"
+                      oninput="applyFilters()"
+                    >
+                  </th>
+
+                  <th>
+                    <input
+                      id="dateColumnFilter"
+                      type="date"
+                      class="form-control column-filter-control"
+                      aria-label="Filter by document date"
+                      onchange="applyFilters()"
+                    >
+                  </th>
+
+                  <th>
+                    <input
+                      id="targetDateColumnFilter"
+                      type="date"
+                      class="form-control column-filter-control"
+                      aria-label="Filter by target date"
+                      onchange="applyFilters()"
+                    >
+                  </th>
+
+                  <th>
+                    <select
+                      id="columnDrafterFilter"
+                      class="form-select column-filter-control"
+                      aria-label="Filter by drafter"
+                      onchange="applyFilters()"
+                    >
+                      <option value="">All</option>
+                    </select>
+                  </th>
+
+                  <th>
+                    <select
+                      id="columnStatusFilter"
+                      class="form-select column-filter-control"
+                      aria-label="Filter by status"
+                      onchange="applyFilters()"
+                    >
+                      <option value="">All</option>
+                      <option value="Pending">Pending</option>
+                      <option value="For Routing">For Routing</option>
+                      <option value="On Process">On Process</option>
+                      <option value="Forwarded">Forwarded</option>
+                      <option value="Returned">Returned</option>
+                      <option value="Completed">Completed</option>
+                    </select>
+                  </th>
+
+                  <th>
+                    <input
+                      id="remarksColumnFilter"
+                      class="form-control column-filter-control"
+                      placeholder="Filter remarks"
+                      aria-label="Filter by remarks"
+                      oninput="applyFilters()"
+                    >
+                  </th>
+
+                  <th>
+                    <select
+                      id="approvedPdfColumnFilter"
+                      class="form-select column-filter-control"
+                      aria-label="Filter by approved PDF"
+                      onchange="applyFilters()"
+                    >
+                      <option value="">All</option>
+                      <option value="with-pdf">With PDF</option>
+                      <option value="without-pdf">No PDF</option>
+                    </select>
+                  </th>
+
+                  <th>
+                    <input
+                      id="dateEncodedColumnFilter"
+                      type="date"
+                      class="form-control column-filter-control"
+                      aria-label="Filter by encoded date"
+                      onchange="applyFilters()"
+                    >
+                  </th>
+
+                  <th class="column-filter-empty">
+                    <button
+                      type="button"
+                      class="btn btn-light border btn-sm w-100"
+                      onclick="clearColumnFilters()"
+                      title="Clear column filters"
+                    >
+                      <i class="fa-solid fa-eraser me-1"></i>Clear
+                    </button>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="recordsBody"></tbody>
+            </table>
+          </div>
+
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+            <div id="recordsInfo" class="small text-secondary">Showing 0 records</div>
+            <nav aria-label="Records pagination">
+              <ul id="pagination" class="pagination pagination-sm mb-0"></ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="view-settings" class="page-section">
+      <div class="mb-4">
+        <h1 class="page-title">Settings</h1>
+        <div class="page-subtitle">Manage dropdown values for drafters and the five routing sender positions.</div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <div class="card card-clean h-100">
+            <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-bold">Manage Drafters</div>
+                <div class="small text-secondary">Used in the data entry and edit forms</div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="addDrafterPrompt()">
+                <i class="fa-solid fa-plus me-1"></i>Add
+              </button>
+            </div>
+            <div class="card-body pt-2">
+              <div id="drafterSettingsList" class="list-group settings-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card card-clean h-100">
+            <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-bold">Manage Sender's Name</div>
+                <div class="small text-secondary">Used in the five routing-slip sender positions</div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="addSenderPrompt()">
+                <i class="fa-solid fa-plus me-1"></i>Add
+              </button>
+            </div>
+            <div class="card-body pt-2">
+              <div id="senderSettingsList" class="list-group settings-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
+
+  <!-- HIDDEN APPROVED MEMO FILE INPUT -->
+  <input
+    id="approvedMemoFile"
+    type="file"
+    accept=".pdf,application/pdf"
+    hidden
+  >
+
+  <!-- EDIT MODAL -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <form id="editForm">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fa-solid fa-pen-to-square me-2 text-warning"></i>Edit Record
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <input type="hidden" id="editRowNumber">
+
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label">Ref No.</label>
+                <input id="editRefNo" class="form-control bg-light" readonly>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label required">Date</label>
+                <input id="editDate" type="date" class="form-control" required>
+              </div>
+
+              <div class="col-md-5">
+                <label class="form-label">Target Date</label>
+                <input id="editTargetDate" type="date" class="form-control">
+              </div>
+
+              <div class="col-12">
+                <label class="form-label required">Subject</label>
+                <textarea id="editSubject" class="form-control" rows="3" required></textarea>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label required">Drafter</label>
+                <select id="editDrafter" class="form-select" required></select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label required">Status</label>
+                <select id="editStatus" class="form-select" required>
+                  <option value="Pending">Pending</option>
+                  <option value="For Routing">For Routing</option>
+                  <option value="On Process">On Process</option>
+                  <option value="Forwarded">Forwarded</option>
+                  <option value="Returned">Returned</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Remarks</label>
+                <textarea id="editRemarks" class="form-control" rows="3"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-light border" data-bs-dismiss="modal">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-warning">
+              <i class="fa-solid fa-floppy-disk me-2"></i>Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROUTING / PRINT MODAL -->
+  <div class="modal fade" id="routingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fa-solid fa-print me-2 text-primary"></i>Routing Slip Preview
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="alert alert-light border d-flex align-items-start gap-2 py-2 mb-3">
+            <i class="fa-solid fa-circle-info text-primary mt-1"></i>
+            <div class="small">
+              Select the sender assigned to each routing position. The default names follow the approved routing-slip format.
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label">Asst. Chief, RPRMD</label>
+              <select id="routingSender1" class="form-select" onchange="refreshRoutingPreview()">
+                <option value="">Select Sender's Name</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Section Chief</label>
+              <select id="routingSender2" class="form-select" onchange="refreshRoutingPreview()">
+                <option value="">Select Sender's Name</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Chief Clerk</label>
+              <select id="routingSender3" class="form-select" onchange="refreshRoutingPreview()">
+                <option value="">Select Sender's Name</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Senior Section PNCO</label>
+              <select id="routingSender4" class="form-select" onchange="refreshRoutingPreview()">
+                <option value="">Select Sender's Name</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Drafter — Routing Sender</label>
+              <select id="routingSender5" class="form-select" onchange="refreshRoutingPreview()">
+                <option value="">Select Sender's Name</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="routingPreview"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light border" data-bs-dismiss="modal">
+            Close
+          </button>
+          <button type="button" class="btn btn-primary" onclick="printCurrentRouting()">
+            <i class="fa-solid fa-print me-2"></i>Print Half A4
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR SCANNER MODAL -->
+  <div class="modal fade" id="qrScannerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fa-solid fa-qrcode me-2 text-primary"></i>Scan Document QR
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="alert alert-warning border py-2 small">
+            Google Apps Script runs this page inside a protected iframe, so a
+            live webcam cannot open here. Use the external HTTPS scanner for
+            live scanning, or use Take Photo / Choose Image.
+          </div>
+
+          <div class="d-grid gap-2 mb-3">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="openExternalQrScanner()"
+            >
+              <i class="fa-solid fa-camera me-2"></i>Open Live Camera Scanner
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm"
+              onclick="configureExternalScannerUrl()"
+            >
+              <i class="fa-solid fa-link me-1"></i>Set Scanner Page URL
+            </button>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-6">
+              <button
+                type="button"
+                class="btn btn-outline-success w-100"
+                onclick="openQrCameraPhoto()"
+              >
+                <i class="fa-solid fa-camera-retro me-1"></i>Take Photo
+              </button>
+            </div>
+
+            <div class="col-6">
+              <button
+                type="button"
+                class="btn btn-outline-dark w-100"
+                onclick="openQrGallery()"
+              >
+                <i class="fa-regular fa-image me-1"></i>Choose Image
+              </button>
+            </div>
+          </div>
+
+          <div
+            id="qrScannerStatus"
+            class="qr-scanner-status text-center text-secondary mt-2"
+            aria-live="polite"
+          >
+            The QR code must contain the Ref No. only, such as PPS-0001.
+          </div>
+
+          <input
+            id="qrCameraPhotoInput"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            hidden
+            onchange="scanQrImageFile(this)"
+          >
+
+          <input
+            id="qrGalleryInput"
+            type="file"
+            accept="image/*"
+            hidden
+            onchange="scanQrImageFile(this)"
+          >
+
+          <div id="qrFileReaderHidden"></div>
+
+          <div class="border-top mt-3 pt-3">
+            <label for="manualQrRefNo" class="form-label">
+              Manual Ref No.
+            </label>
+
+            <div class="input-group">
+              <input
+                id="manualQrRefNo"
+                class="form-control"
+                placeholder="Example: PPS-0001"
+                autocomplete="off"
+                autocapitalize="characters"
+                spellcheck="false"
+                inputmode="text"
+                onkeydown="if (event.key === 'Enter') { event.preventDefault(); findManualQrRecord(); }"
+              >
+
+              <button
+                type="button"
+                class="btn btn-outline-primary"
+                onclick="findManualQrRecord()"
+              >
+                <i class="fa-solid fa-magnifying-glass me-1"></i>Find
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light border" data-bs-dismiss="modal">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR TRACKING MODAL -->
+  <div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fa-solid fa-qrcode me-2 text-dark"></i>QR Tracking Code
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="text-center mb-3">
+            <div class="small text-secondary">Document Tracking Number</div>
+            <div id="qrRefNo" class="fw-bold fs-5"></div>
+            <div id="qrCurrentStatus" class="mt-2"></div>
+          </div>
+
+          <div id="qrCodeContainer" class="qr-code-box"></div>
+
+          <div class="small text-secondary text-center mt-2">
+            This QR code stores the Ref No. only. Use the system QR scanner
+            to locate the record and update its status.
+          </div>
+
+          <label class="form-label mt-3">QR Content — Ref No. only</label>
+          <div class="input-group">
+            <input
+              id="qrReferenceValue"
+              class="form-control qr-link-input"
+              readonly
+              aria-label="QR reference number"
+            >
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              onclick="copyQrReference()"
+              title="Copy reference number"
+            >
+              <i class="fa-regular fa-copy"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light border" data-bs-dismiss="modal">
+            Close
+          </button>
+          <button type="button" class="btn btn-outline-dark" onclick="printQrCode()">
+            <i class="fa-solid fa-print me-1"></i>Print QR
+          </button>
+          <button type="button" class="btn btn-primary" onclick="openQuickStatusFromQr()">
+            <i class="fa-solid fa-pen-to-square me-1"></i>Update Status
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK QR STATUS UPDATE MODAL -->
+  <div class="modal fade" id="quickStatusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <form id="quickStatusForm">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fa-solid fa-route me-2 text-primary"></i>Track and Update Document
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <input type="hidden" id="quickStatusRowNumber">
+
+            <div class="quick-track-summary mb-3">
+              <div class="row g-2">
+                <div class="col-md-4">
+                  <div class="small text-secondary">Ref No.</div>
+                  <div id="quickStatusRefNo" class="fw-bold"></div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="small text-secondary">Document Date</div>
+                  <div id="quickStatusDate" class="fw-semibold"></div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="small text-secondary">Drafter</div>
+                  <div id="quickStatusDrafter" class="fw-semibold"></div>
+                </div>
+
+                <div class="col-12 mt-2">
+                  <div class="small text-secondary">Subject</div>
+                  <div id="quickStatusSubject" class="quick-track-subject fw-semibold"></div>
+                </div>
+
+                <div class="col-12 mt-2">
+                  <div class="small text-secondary">Current Status</div>
+                  <div id="quickStatusCurrentBadge" class="mt-1"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-5">
+                <label for="quickStatusSelect" class="form-label required">New Status</label>
+                <select id="quickStatusSelect" class="form-select" required>
+                  <option value="Pending">Pending</option>
+                  <option value="For Routing">For Routing</option>
+                  <option value="On Process">On Process</option>
+                  <option value="Forwarded">Forwarded</option>
+                  <option value="Returned">Returned</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+
+              <div class="col-md-7">
+                <label for="quickStatusRemarks" class="form-label">Remarks / Tracking Note</label>
+                <textarea
+                  id="quickStatusRemarks"
+                  class="form-control"
+                  rows="3"
+                  maxlength="1000"
+                  placeholder="Add the latest routing or action note"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-light border" data-bs-dismiss="modal">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fa-solid fa-floppy-disk me-1"></i>Save Status Update
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <script>
+    const state = {
+      records: [],
+      filteredRecords: [],
+      drafters: [],
+      senders: [],
+      currentPage: 1,
+      pageSize: 10,
+      selectedUploadRow: null,
+      currentRoutingRecord: null,
+      currentQrRecord: null,
+      quickStatusRecord: null,
+      qrFileScanner: null,
+      lastScannedValue: "",
+      incomingScanHandled: false
+    };
+
+    /*
+      Upload scanner.html to a normal HTTPS host such as GitHub Pages.
+      On first use, click "Set Scanner Page URL" and paste its public URL.
+      The saved URL is stored only in this browser.
+    */
+    const EXTERNAL_SCANNER_STORAGE_KEY = "ppsExternalQrScannerUrl";
+
+    const WEB_APP_RETURN_URL =
+      "https://script.google.com/macros/s/AKfycbwukdJGmlk-6fV2A_6_abKZZoSJ9SMzuaE9I8eP4k27ku1swXzKn49Zzk3P8sUw919noQ/exec";
+
+    const ROUTING_SENDER_FIELDS = [
+      { id: "routingSender1", role: "Asst. Chief, RPRMD", defaultName: "DURUIN, JR" },
+      { id: "routingSender2", role: "Section Chief", defaultName: "GALVEZ" },
+      { id: "routingSender3", role: "Chief Clerk", defaultName: "STA. ANA" },
+      { id: "routingSender4", role: "Senior Section PNCO", defaultName: "UNDING" },
+      { id: "routingSender5", role: "Drafter", defaultName: "GAAS" }
+    ];
+
+    const editModal = new bootstrap.Modal(document.getElementById("editModal"));
+    const routingModal = new bootstrap.Modal(document.getElementById("routingModal"));
+    const qrModal = new bootstrap.Modal(document.getElementById("qrModal"));
+    const qrScannerModal = new bootstrap.Modal(
+      document.getElementById("qrScannerModal")
+    );
+    const quickStatusModal = new bootstrap.Modal(
+      document.getElementById("quickStatusModal")
+    );
+
+    document.addEventListener("DOMContentLoaded", initializeApp);
+
+    async function initializeApp() {
+      setToday();
+      restoreSidebarState();
+      bindForms();
+      bindApprovedMemoInput();
+
+      await refreshAllData();
+      await openIncomingQrScan();
+    }
+
+    function gas(functionName, ...args) {
+      return new Promise((resolve, reject) => {
+        google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(error => {
+            reject(new Error(error && error.message ? error.message : String(error)));
+          })[functionName](...args);
+      });
+    }
+
+    async function refreshAllData() {
+      showLoading("Loading records...");
+
+      try {
+        const [records, drafters, senders, stats, nextRefNo] = await Promise.all([
+          gas("getRecords"),
+          gas("getDrafters"),
+          gas("getSenders"),
+          gas("getDashboardStats"),
+          gas("getNextRefNo")
+        ]);
+
+        state.records = Array.isArray(records) ? records : [];
+        state.drafters = Array.isArray(drafters) ? drafters : [];
+        state.senders = Array.isArray(senders) ? senders : [];
+
+        populateDrafterSelects();
+        populateSenderSelect();
+        renderSettings();
+        renderDashboard(stats || {});
+        document.getElementById("refNoPreview").value = formatRefNo(nextRefNo);
+        applyFilters();
+      } catch (error) {
+        showError(error);
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function bindForms() {
+      document.getElementById("recordForm").addEventListener("submit", saveNewRecord);
+      document.getElementById("editForm").addEventListener("submit", saveEditedRecord);
+      document
+        .getElementById("quickStatusForm")
+        .addEventListener("submit", saveQuickStatus);
+    }
+
+    function bindApprovedMemoInput() {
+      document
+        .getElementById("approvedMemoFile")
+        .addEventListener("change", handleApprovedMemoSelection);
+    }
+
+    function setToday() {
+      const today = new Date();
+      const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 10);
+
+      document.getElementById("recordDate").value = localDate;
+    }
+
+    function showView(viewName) {
+      document.querySelectorAll(".page-section").forEach(section => {
+        section.classList.remove("active");
+      });
+
+      document.querySelectorAll(".nav-item-btn").forEach(button => {
+        button.classList.toggle("active", button.dataset.view === viewName);
+      });
+
+      document.getElementById("view-" + viewName).classList.add("active");
+
+      const titles = {
+        dashboard: "Dashboard",
+        entry: "Data Entry",
+        records: "Records Table",
+        settings: "Settings"
+      };
+
+      document.getElementById("topbarTitle").textContent = titles[viewName] || "Records System";
+      closeMobileSidebar();
+
+      if (viewName === "records") {
+        applyFilters();
+      }
+    }
+
+    function toggleSidebar() {
+      if (window.innerWidth <= 991) {
+        document.body.classList.toggle("sidebar-mobile-open");
+        return;
+      }
+
+      document.body.classList.toggle("sidebar-mini");
+      localStorage.setItem(
+        "recordsSidebarMini",
+        document.body.classList.contains("sidebar-mini") ? "1" : "0"
+      );
+    }
+
+    function closeMobileSidebar() {
+      document.body.classList.remove("sidebar-mobile-open");
+    }
+
+    function restoreSidebarState() {
+      if (window.innerWidth > 991 && localStorage.getItem("recordsSidebarMini") === "1") {
+        document.body.classList.add("sidebar-mini");
+      }
+    }
+
+    async function saveNewRecord(event) {
+      event.preventDefault();
+
+      const data = {
+        subject: document.getElementById("subject").value.trim(),
+        date: document.getElementById("recordDate").value,
+        targetDate: document.getElementById("targetDate").value,
+        drafter: document.getElementById("drafter").value,
+        status: document.getElementById("status").value,
+        remarks: document.getElementById("remarks").value.trim()
+      };
+
+      if (!data.subject || !data.date || !data.drafter || !data.status) {
+        Swal.fire({
+          icon: "warning",
+          title: "Incomplete Form",
+          text: "Please complete all required fields."
+        });
+        return;
+      }
+
+      showLoading("Saving record...");
+
+      try {
+        const response = await gas("saveRecord", data);
+
+        await Swal.fire({
+          icon: "success",
+          title: "Record Saved",
+          text: response.message,
+          timer: 1600,
+          showConfirmButton: false
+        });
+
+        resetRecordForm();
+        await refreshAllData();
+
+        if (response.record) {
+          openRoutingModal(response.record);
+        }
+      } catch (error) {
+        showError(error);
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function resetRecordForm() {
+      document.getElementById("recordForm").reset();
+      setToday();
+      document.getElementById("status").value = "For Routing";
+      gas("getNextRefNo")
+        .then(refNo => {
+          document.getElementById("refNoPreview").value = formatRefNo(refNo);
+        })
+        .catch(() => {});
+    }
+
+    function openEditRecord(rowNumber) {
+      const record = state.records.find(item => Number(item.rowNumber) === Number(rowNumber));
+
+      if (!record) {
+        showError(new Error("Record not found. Please reload the page."));
+        return;
+      }
+
+      document.getElementById("editRowNumber").value = record.rowNumber;
+      document.getElementById("editRefNo").value = formatRefNo(record.refNo);
+      document.getElementById("editSubject").value = record.subject || "";
+      document.getElementById("editDate").value = record.date || "";
+      document.getElementById("editTargetDate").value = record.targetDate || "";
+      document.getElementById("editDrafter").value = record.drafter || "";
+      document.getElementById("editStatus").value = record.status || "For Routing";
+      document.getElementById("editRemarks").value = record.remarks || "";
+
+      editModal.show();
+    }
+
+    async function saveEditedRecord(event) {
+      event.preventDefault();
+
+      const rowNumber = Number(document.getElementById("editRowNumber").value);
+      const data = {
+        subject: document.getElementById("editSubject").value.trim(),
+        date: document.getElementById("editDate").value,
+        targetDate: document.getElementById("editTargetDate").value,
+        drafter: document.getElementById("editDrafter").value,
+        status: document.getElementById("editStatus").value,
+        remarks: document.getElementById("editRemarks").value.trim()
+      };
+
+      showLoading("Updating record...");
+
+      try {
+        const response = await gas("updateRecord", rowNumber, data);
+        editModal.hide();
+
+        await Swal.fire({
+          icon: "success",
+          title: "Record Updated",
+          text: response.message,
+          timer: 1500,
+          showConfirmButton: false
+        });
+
+        await refreshAllData();
+      } catch (error) {
+        showError(error);
+      } finally {
+        hideLoading();
+      }
+    }
+
+    async function confirmDeleteRecord(rowNumber) {
+      const record = state.records.find(item => Number(item.rowNumber) === Number(rowNumber));
+
+      const result = await Swal.fire({
+        icon: "warning",
+        title: "Delete Record?",
+        html:
+          "Ref No. <strong>" +
+          escapeHtml(formatRefNo(record ? record.refNo : "")) +
+          "</strong> will be permanently removed from the sheet.",
+        showCancelButton: true,
+        confirmButtonText: "Delete",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#dc2626"
+      });
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      showLoading("Deleting record...");
+
+      try {
+        const response = await gas("deleteRecord", Number(rowNumber));
+
+        await Swal.fire({
+          icon: "success",
+          title: "Record Deleted",
+          text: response.message,
+          timer: 1400,
+          showConfirmButton: false
+        });
+
+        await refreshAllData();
+      } catch (error) {
+        showError(error);
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function selectApprovedMemo(rowNumber) {
+      state.selectedUploadRow = Number(rowNumber);
+
+      const fileInput = document.getElementById("approvedMemoFile");
+      fileInput.value = "";
+      fileInput.click();
+    }
+
+    async function handleApprovedMemoSelection() {
+      const file = this.files && this.files[0];
+
+      if (!file || !state.selectedUploadRow) {
+        return;
+      }
+
+      const isPdf =
+        file.type === "application/pdf" ||
+        file.name.toLowerCase().endsWith(".pdf");
+
+      if (!isPdf) {
+        this.value = "";
+        Swal.fire({
+          icon: "warning",
+          title: "Invalid File",
+          text: "Only PDF files are allowed."
+        });
+        return;
+      }
+
+      const maximumFileSize = 5 * 1024 * 1024;
+
+      if (file.size > maximumFileSize) {
+        this.value = "";
+        Swal.fire({
+          icon: "warning",
+          title: "File Too Large",
+          text: "The approved memo must not exceed 5 MB."
+        });
+        return;
+      }
+
+      const record = state.records.find(
+        item => Number(item.rowNumber) === Number(state.selectedUploadRow)
+      );
+
+      const confirmation = await Swal.fire({
+        icon: "question",
+        title: record && record.approvedPdfUrl
+          ? "Replace Approved Memo?"
+          : "Upload Approved Memo?",
+        html:
+          "<div class='text-start'>" +
+          "<div><strong>Ref No.:</strong> " +
+          escapeHtml(formatRefNo(record ? record.refNo : "")) +
+          "</div>" +
+          "<div><strong>File:</strong> " +
+          escapeHtml(file.name) +
+          "</div>" +
+          "<div><strong>Size:</strong> " +
+          escapeHtml(formatFileSize(file.size)) +
+          "</div>" +
+          "</div>",
+        showCancelButton: true,
+        confirmButtonText: "Upload",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#198754"
+      });
+
+      if (!confirmation.isConfirmed) {
+        this.value = "";
+        return;
+      }
+
+      showLoading("Uploading approved memo...");
+
+      try {
+        const base64 = await fileToBase64(file);
+        const fileData = {
+          name: file.name,
+          mimeType: file.type || "application/pdf",
+          base64: base64
+        };
+
+        const response = await gas(
+          "uploadApprovedMemo",
+          state.selectedUploadRow,
+          fileData
+        );
+
+        await Swal.fire({
+          icon: "success",
+          title: "Upload Successful",
+          text: response.message,
+          timer: 1600,
+          showConfirmButton: false
+        });
+
+        state.selectedUploadRow = null;
+        this.value = "";
+        await refreshAllData();
+      } catch (error) {
+        showError(error);
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = event => {
+          const result = String(event.target.result || "");
+          resolve(result.includes(",") ? result.split(",")[1] : result);
+        };
+
+        reader.onerror = () => reject(new Error("The selected PDF could not be read."));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function applyFilters() {
+      const query = getNormalizedFilterValue("searchInput");
+      const status = getNormalizedFilterValue("statusFilter");
+      const drafter = getNormalizedFilterValue("drafterFilter");
+
+      const refNoFilter = getNormalizedFilterValue("refNoColumnFilter");
+      const subjectFilter = getNormalizedFilterValue("subjectColumnFilter");
+      const dateFilter = getFilterValue("dateColumnFilter");
+      const targetDateFilter = getFilterValue("targetDateColumnFilter");
+      const columnDrafter = getNormalizedFilterValue("columnDrafterFilter");
+      const columnStatus = getNormalizedFilterValue("columnStatusFilter");
+      const remarksFilter = getNormalizedFilterValue("remarksColumnFilter");
+      const approvedPdfFilter = getFilterValue("approvedPdfColumnFilter");
+      const dateEncodedFilter = getFilterValue("dateEncodedColumnFilter");
+
+      state.filteredRecords = state.records.filter(record => {
+        const formattedRefNo = formatRefNo(record.refNo);
+        const hasPdf = Boolean(record.approvedPdfUrl);
+
+        const searchableText = normalize([
+          formattedRefNo,
+          record.refNo,
+          record.subject,
+          record.date,
+          record.targetDate,
+          record.drafter,
+          record.status,
+          record.remarks,
+          record.dateEncoded,
+          hasPdf ? "with pdf approved pdf" : "no pdf without pdf"
+        ].join(" "));
+
+        const matchesQuery = !query || searchableText.includes(query);
+        const matchesStatus = !status || normalize(record.status) === status;
+        const matchesDrafter = !drafter || normalize(record.drafter) === drafter;
+
+        const matchesRefNo =
+          !refNoFilter ||
+          normalize(formattedRefNo).includes(refNoFilter) ||
+          normalize(record.refNo).includes(refNoFilter);
+
+        const matchesSubject =
+          !subjectFilter ||
+          normalize(record.subject).includes(subjectFilter);
+
+        const matchesDate = matchesDateFilter(record.date, dateFilter);
+        const matchesTargetDate = matchesDateFilter(record.targetDate, targetDateFilter);
+
+        const matchesColumnDrafter =
+          !columnDrafter ||
+          normalize(record.drafter) === columnDrafter;
+
+        const matchesColumnStatus =
+          !columnStatus ||
+          normalize(record.status) === columnStatus;
+
+        const matchesRemarks =
+          !remarksFilter ||
+          normalize(record.remarks).includes(remarksFilter);
+
+        const matchesApprovedPdf =
+          !approvedPdfFilter ||
+          (approvedPdfFilter === "with-pdf" && hasPdf) ||
+          (approvedPdfFilter === "without-pdf" && !hasPdf);
+
+        const matchesDateEncoded =
+          matchesDateFilter(record.dateEncoded, dateEncodedFilter);
+
+        return (
+          matchesQuery &&
+          matchesStatus &&
+          matchesDrafter &&
+          matchesRefNo &&
+          matchesSubject &&
+          matchesDate &&
+          matchesTargetDate &&
+          matchesColumnDrafter &&
+          matchesColumnStatus &&
+          matchesRemarks &&
+          matchesApprovedPdf &&
+          matchesDateEncoded
+        );
+      });
+
+      state.currentPage = 1;
+      renderRecordsTable();
+    }
+
+    function getFilterValue(id) {
+      const element = document.getElementById(id);
+      return element ? String(element.value || "").trim() : "";
+    }
+
+    function getNormalizedFilterValue(id) {
+      return normalize(getFilterValue(id));
+    }
+
+    function matchesDateFilter(recordValue, filterValue) {
+      if (!filterValue) {
+        return true;
+      }
+
+      return toIsoDate(recordValue) === filterValue;
+    }
+
+    function toIsoDate(value) {
+      const text = String(value == null ? "" : value).trim();
+
+      if (!text) {
+        return "";
+      }
+
+      const isoMatch = text.match(/^(\d{4}-\d{2}-\d{2})/);
+
+      if (isoMatch) {
+        return isoMatch[1];
+      }
+
+      const parsedDate = new Date(text);
+
+      if (Number.isNaN(parsedDate.getTime())) {
+        return text;
+      }
+
+      const localDate = new Date(
+        parsedDate.getTime() - parsedDate.getTimezoneOffset() * 60000
+      );
+
+      return localDate.toISOString().slice(0, 10);
+    }
+
+    function clearColumnFilters() {
+      [
+        "refNoColumnFilter",
+        "subjectColumnFilter",
+        "dateColumnFilter",
+        "targetDateColumnFilter",
+        "columnDrafterFilter",
+        "columnStatusFilter",
+        "remarksColumnFilter",
+        "approvedPdfColumnFilter",
+        "dateEncodedColumnFilter"
+      ].forEach(id => {
+        const element = document.getElementById(id);
+
+        if (element) {
+          element.value = "";
+        }
+      });
+
+      applyFilters();
+    }
+
+    function clearAllFilters() {
+      [
+        "searchInput",
+        "statusFilter",
+        "drafterFilter",
+        "refNoColumnFilter",
+        "subjectColumnFilter",
+        "dateColumnFilter",
+        "targetDateColumnFilter",
+        "columnDrafterFilter",
+        "columnStatusFilter",
+        "remarksColumnFilter",
+        "approvedPdfColumnFilter",
+        "dateEncodedColumnFilter"
+      ].forEach(id => {
+        const element = document.getElementById(id);
+
+        if (element) {
+          element.value = "";
+        }
+      });
+
+      applyFilters();
+    }
+
+    function changePageSize() {
+      state.pageSize = Number(document.getElementById("pageSize").value) || 10;
+      state.currentPage = 1;
+      renderRecordsTable();
+    }
+
+    function changePage(page) {
+      const totalPages = Math.max(
+        1,
+        Math.ceil(state.filteredRecords.length / state.pageSize)
+      );
+
+      state.currentPage = Math.min(Math.max(1, page), totalPages);
+      renderRecordsTable();
+    }
+
+    function renderRecordsTable() {
+      const tbody = document.getElementById("recordsBody");
+      const total = state.filteredRecords.length;
+      const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+
+      if (state.currentPage > totalPages) {
+        state.currentPage = totalPages;
+      }
+
+      const start = (state.currentPage - 1) * state.pageSize;
+      const pageRecords = state.filteredRecords.slice(start, start + state.pageSize);
+
+      if (!pageRecords.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="10">
+              <div class="empty-state">
+                <i class="fa-regular fa-folder-open d-block"></i>
+                <div class="fw-bold">No records found</div>
+                <div class="small">Try changing your search or filters.</div>
+              </div>
+            </td>
+          </tr>
+        `;
+      } else {
+        tbody.innerHTML = pageRecords.map(renderRecordRow).join("");
+      }
+
+      const from = total ? start + 1 : 0;
+      const to = Math.min(start + pageRecords.length, total);
+
+      document.getElementById("recordsInfo").textContent =
+        "Showing " + from + " to " + to + " of " + total + " record(s)";
+
+      renderPagination(totalPages);
+    }
+
+    function renderRecordRow(record) {
+      const hasPdf = Boolean(record.approvedPdfUrl);
+
+      return `
+        <tr>
+          <td class="fw-semibold">${escapeHtml(formatRefNo(record.refNo))}</td>
+          <td class="subject-cell">${nl2br(record.subject)}</td>
+          <td>${escapeHtml(record.date || "—")}</td>
+          <td>${escapeHtml(record.targetDate || "—")}</td>
+          <td>${nl2br(record.drafter || "—")}</td>
+          <td>
+            <span class="status-badge ${getStatusClass(record.status)}">
+              ${escapeHtml(record.status || "No Status")}
+            </span>
+          </td>
+          <td class="remarks-cell">${nl2br(record.remarks || "—")}</td>
+          <td>
+            ${
+              hasPdf
+                ? `
+                  <a
+                    href="${escapeAttribute(record.approvedPdfUrl)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn btn-outline-danger btn-sm"
+                    title="Open approved PDF"
+                  >
+                    <i class="fa-solid fa-file-pdf me-1"></i>View PDF
+                  </a>
+                `
+                : `<span class="text-secondary">No file</span>`
+            }
+          </td>
+          <td>${escapeHtml(record.dateEncoded || "—")}</td>
+          <td>
+            <div class="action-stack">
+              <button
+                type="button"
+                class="btn btn-dark btn-sm"
+                onclick="showQrCode(${Number(record.rowNumber)})"
+              >
+                <i class="fa-solid fa-qrcode me-1"></i>QR Track
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                onclick="openRoutingByRow(${Number(record.rowNumber)})"
+              >
+                <i class="fa-solid fa-print me-1"></i>Print
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-success btn-sm"
+                onclick="selectApprovedMemo(${Number(record.rowNumber)})"
+              >
+                <i class="fa-solid fa-file-arrow-up me-1"></i>
+                ${hasPdf ? "Replace Memo" : "Upload Memo"}
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-warning btn-sm"
+                onclick="openEditRecord(${Number(record.rowNumber)})"
+              >
+                <i class="fa-solid fa-pen me-1"></i>Edit
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-danger btn-sm"
+                onclick="confirmDeleteRecord(${Number(record.rowNumber)})"
+              >
+                <i class="fa-solid fa-trash me-1"></i>Delete
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+
+    function getRecordByRow(rowNumber) {
+      return state.records.find(
+        item => Number(item.rowNumber) === Number(rowNumber)
+      );
+    }
+
+    function showQrCode(rowNumber) {
+      const record = getRecordByRow(rowNumber);
+
+      if (!record) {
+        showError(new Error("Record not found. Please reload the page."));
+        return;
+      }
+
+      state.currentQrRecord = record;
+
+      const qrReference = buildQrValue(record);
+      document.getElementById("qrRefNo").textContent = qrReference;
+      document.getElementById("qrCurrentStatus").innerHTML = `
+        <span class="status-badge ${getStatusClass(record.status)}">
+          ${escapeHtml(record.status || "No Status")}
+        </span>
+      `;
+      document.getElementById("qrReferenceValue").value = qrReference;
+
+      qrModal.show();
+
+      window.setTimeout(() => {
+        renderQrCode("qrCodeContainer", qrReference, 205);
+      }, 180);
+    }
+
+    function renderQrCode(containerId, textValue, size) {
+      const container = document.getElementById(containerId);
+
+      if (!container) {
+        return;
+      }
+
+      container.innerHTML = "";
+
+      if (typeof QRCode === "undefined") {
+        container.innerHTML = `
+          <div class="text-danger text-center small">
+            QR library failed to load. Check the internet connection.
+          </div>
+        `;
+        return;
+      }
+
+      new QRCode(container, {
+        text: String(textValue || ""),
+        width: Number(size) || 200,
+        height: Number(size) || 200,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+
+    function buildQrValue(record) {
+      return formatRefNo(record && record.refNo ? record.refNo : "");
+    }
+
+    async function copyQrReference() {
+      const input = document.getElementById("qrReferenceValue");
+      const value = input ? input.value : "";
+
+      if (!value) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(value);
+
+        Swal.fire({
+          icon: "success",
+          title: "Ref No. Copied",
+          timer: 1100,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        input.focus();
+        input.select();
+        document.execCommand("copy");
+
+        Swal.fire({
+          icon: "success",
+          title: "Ref No. Copied",
+          timer: 1100,
+          showConfirmButton: false
+        });
+      }
+    }
+
+    function openQuickStatusFromQr() {
+      const record = state.currentQrRecord;
+
+      if (!record) {
+        showError(new Error("No QR record is selected."));
+        return;
+      }
+
+      qrModal.hide();
+
+      window.setTimeout(() => {
+        openQuickStatusRecord(record);
+      }, 250);
+    }
+
+    function openQuickStatusRecord(record) {
+      if (!record) {
+        showError(new Error("Record not found."));
+        return;
+      }
+
+      state.quickStatusRecord = record;
+
+      document.getElementById("quickStatusRowNumber").value = record.rowNumber;
+      document.getElementById("quickStatusRefNo").textContent =
+        formatRefNo(record.refNo);
+      document.getElementById("quickStatusDate").textContent =
+        record.date || "—";
+      document.getElementById("quickStatusDrafter").textContent =
+        record.drafter || "—";
+      document.getElementById("quickStatusSubject").textContent =
+        record.subject || "—";
+      document.getElementById("quickStatusCurrentBadge").innerHTML = `
+        <span class="status-badge ${getStatusClass(record.status)}">
+          ${escapeHtml(record.status || "No Status")}
+        </span>
+      `;
+      document.getElementById("quickStatusSelect").value =
+        record.status || "For Routing";
+      document.getElementById("quickStatusRemarks").value =
+        record.remarks || "";
+
+      quickStatusModal.show();
+    }
+
+    async function saveQuickStatus(event) {
+      event.preventDefault();
+
+      const rowNumber = Number(
+        document.getElementById("quickStatusRowNumber").value
+      );
+      const record = getRecordByRow(rowNumber);
+
+      if (!record) {
+        showError(new Error("Record not found. Please reload the page."));
+        return;
+      }
+
+      const newStatus = document.getElementById("quickStatusSelect").value;
+      const newRemarks = document
+        .getElementById("quickStatusRemarks")
+        .value
+        .trim();
+
+      if (!newStatus) {
+        Swal.fire({
+          icon: "warning",
+          title: "Select a Status",
+          text: "Please select the new document status."
+        });
+        return;
+      }
+
+      const data = {
+        subject: record.subject || "",
+        date: record.date || "",
+        targetDate: record.targetDate || "",
+        drafter: record.drafter || "",
+        status: newStatus,
+        remarks: newRemarks
+      };
+
+      showLoading("Updating document status...");
+
+      try {
+        const response = await gas("updateRecord", rowNumber, data);
+        quickStatusModal.hide();
+
+        await Swal.fire({
+          icon: "success",
+          title: "Status Updated",
+          text: response.message || "The document status was updated.",
+          timer: 1600,
+          showConfirmButton: false
+        });
+
+        await refreshAllData();
+      } catch (error) {
+        showError(error);
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function openQrScanner() {
+      showView("records");
+
+      document.getElementById("manualQrRefNo").value = "";
+      setQrScannerStatus(
+        "The QR code must contain the Ref No. only, such as PPS-0001.",
+        "info"
+      );
+
+      qrScannerModal.show();
+    }
+
+    function setQrScannerStatus(message, type) {
+      const statusElement = document.getElementById("qrScannerStatus");
+
+      if (!statusElement) {
+        return;
+      }
+
+      const textClass =
+        type === "success"
+          ? "text-success"
+          : type === "danger"
+            ? "text-danger"
+            : type === "warning"
+              ? "text-warning-emphasis"
+              : "text-secondary";
+
+      statusElement.textContent = message;
+      statusElement.className =
+        "qr-scanner-status text-center mt-2 " + textClass;
+    }
+
+    function getSavedExternalScannerUrl() {
+      return String(
+        localStorage.getItem(EXTERNAL_SCANNER_STORAGE_KEY) || ""
+      ).trim();
+    }
+
+    async function configureExternalScannerUrl() {
+      const currentUrl = getSavedExternalScannerUrl();
+
+      const result = await Swal.fire({
+        icon: "info",
+        title: "Scanner Page URL",
+        html:
+          "<div class='text-start small mb-2'>" +
+          "Upload <strong>scanner.html</strong> to GitHub Pages, then paste " +
+          "its HTTPS address below." +
+          "</div>",
+        input: "url",
+        inputValue: currentUrl,
+        inputPlaceholder:
+          "https://username.github.io/repository/scanner.html",
+        showCancelButton: true,
+        confirmButtonText: "Save",
+        cancelButtonText: "Cancel",
+        inputValidator: value => {
+          const enteredUrl = String(value || "").trim();
+
+          if (!enteredUrl) {
+            return "Enter the scanner page URL.";
+          }
+
+          try {
+            const parsedUrl = new URL(enteredUrl);
+
+            if (parsedUrl.protocol !== "https:") {
+              return "The scanner page must use HTTPS.";
+            }
+          } catch (error) {
+            return "Enter a valid scanner page URL.";
+          }
+
+          return undefined;
+        }
+      });
+
+      if (!result.isConfirmed) {
+        return "";
+      }
+
+      const scannerUrl = String(result.value || "").trim();
+      localStorage.setItem(
+        EXTERNAL_SCANNER_STORAGE_KEY,
+        scannerUrl
+      );
+
+      await Swal.fire({
+        icon: "success",
+        title: "Scanner URL Saved",
+        timer: 1200,
+        showConfirmButton: false
+      });
+
+      return scannerUrl;
+    }
+
+    async function openExternalQrScanner() {
+      let scannerUrl = getSavedExternalScannerUrl();
+
+      if (!scannerUrl) {
+        scannerUrl = await configureExternalScannerUrl();
+      }
+
+      if (!scannerUrl) {
+        return;
+      }
+
+      let destination;
+
+      try {
+        destination = new URL(scannerUrl);
+        destination.searchParams.set(
+          "return",
+          WEB_APP_RETURN_URL
+        );
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Invalid Scanner URL",
+          text: "Set a valid HTTPS scanner page URL."
+        });
+        return;
+      }
+
+      const openedWindow = window.open(
+        destination.toString(),
+        "_blank",
+        "noopener,noreferrer"
+      );
+
+      if (!openedWindow) {
+        Swal.fire({
+          icon: "warning",
+          title: "Pop-up Blocked",
+          text:
+            "Allow pop-ups for this site, then open the live scanner again."
+        });
+      }
+    }
+
+    function openQrCameraPhoto() {
+      const input = document.getElementById("qrCameraPhotoInput");
+
+      if (input) {
+        input.value = "";
+        input.click();
+      }
+    }
+
+    function openQrGallery() {
+      const input = document.getElementById("qrGalleryInput");
+
+      if (input) {
+        input.value = "";
+        input.click();
+      }
+    }
+
+    async function scanQrImageFile(input) {
+      const file = input && input.files && input.files[0];
+
+      if (!file) {
+        return;
+      }
+
+      setQrScannerStatus(
+        "Reading QR code from image…",
+        "info"
+      );
+
+      let decodedText = "";
+      let firstError = null;
+
+      if (typeof Html5Qrcode !== "undefined") {
+        try {
+          state.qrFileScanner = new Html5Qrcode(
+            "qrFileReaderHidden",
+            getQrScannerOptions()
+          );
+
+          decodedText = await state.qrFileScanner.scanFile(
+            file,
+            true
+          );
+        } catch (error) {
+          firstError = error;
+        } finally {
+          if (state.qrFileScanner) {
+            try {
+              await state.qrFileScanner.clear();
+            } catch (error) {
+              // File scanner cleanup is optional.
+            }
+          }
+
+          state.qrFileScanner = null;
+        }
+      }
+
+      if (!decodedText) {
+        try {
+          decodedText = await scanQrImageWithNativeDetector(file);
+        } catch (error) {
+          if (!firstError) {
+            firstError = error;
+          }
+        }
+      }
+
+      input.value = "";
+
+      if (!decodedText) {
+        setQrScannerStatus(
+          "No QR code was detected. Retake the photo closer and keep the full QR visible.",
+          "warning"
+        );
+
+        Swal.fire({
+          icon: "warning",
+          title: "QR Not Detected",
+          text:
+            firstError && firstError.message
+              ? firstError.message
+              : "Try another clear image of the QR code."
+        });
+        return;
+      }
+
+      await handleQrScanSuccess(decodedText);
+    }
+
+    function getQrScannerOptions() {
+      const options = {
+        verbose: false
+      };
+
+      if (
+        typeof Html5QrcodeSupportedFormats !== "undefined" &&
+        Html5QrcodeSupportedFormats.QR_CODE != null
+      ) {
+        options.formatsToSupport = [
+          Html5QrcodeSupportedFormats.QR_CODE
+        ];
+      }
+
+      return options;
+    }
+
+    async function scanQrImageWithNativeDetector(file) {
+      if (
+        typeof BarcodeDetector === "undefined" ||
+        typeof createImageBitmap !== "function"
+      ) {
+        throw new Error(
+          "This browser cannot scan the selected image."
+        );
+      }
+
+      if (
+        typeof BarcodeDetector.getSupportedFormats === "function"
+      ) {
+        const formats =
+          await BarcodeDetector.getSupportedFormats();
+
+        if (!formats.includes("qr_code")) {
+          throw new Error(
+            "QR image detection is not supported by this browser."
+          );
+        }
+      }
+
+      const bitmap = await createImageBitmap(file);
+
+      try {
+        const detector = new BarcodeDetector({
+          formats: ["qr_code"]
+        });
+        const results = await detector.detect(bitmap);
+
+        return results && results[0]
+          ? String(results[0].rawValue || "")
+          : "";
+      } finally {
+        if (
+          bitmap &&
+          typeof bitmap.close === "function"
+        ) {
+          bitmap.close();
+        }
+      }
+    }
+
+    async function handleQrScanSuccess(decodedText) {
+      const scannedValue = String(decodedText || "").trim();
+
+      if (!scannedValue) {
+        return;
+      }
+
+      state.lastScannedValue = scannedValue;
+
+      setQrScannerStatus(
+        "QR detected: " + scannedValue,
+        "success"
+      );
+
+      qrScannerModal.hide();
+
+      window.setTimeout(() => {
+        findAndOpenQrRecord(scannedValue);
+      }, 200);
+    }
+
+    async function findManualQrRecord() {
+      const manualValue = document
+        .getElementById("manualQrRefNo")
+        .value
+        .trim();
+
+      if (!manualValue) {
+        Swal.fire({
+          icon: "warning",
+          title: "Enter Ref No.",
+          text: "Enter the document reference number."
+        });
+        return;
+      }
+
+      qrScannerModal.hide();
+
+      window.setTimeout(() => {
+        findAndOpenQrRecord(manualValue);
+      }, 200);
+    }
+
+    function findAndOpenQrRecord(scannedValue) {
+      const reference = extractReferenceFromQr(scannedValue);
+      const record = findRecordByReference(reference);
+
+      if (!record) {
+        Swal.fire({
+          icon: "warning",
+          title: "Record Not Found",
+          text:
+            "No record matches Ref No. " +
+            (reference || scannedValue) +
+            "."
+        });
+        return;
+      }
+
+      showView("records");
+      openQuickStatusRecord(record);
+    }
+
+    function extractReferenceFromQr(value) {
+      const textValue = String(
+        value == null ? "" : value
+      ).trim();
+
+      if (!textValue) {
+        return "";
+      }
+
+      try {
+        const url = new URL(textValue);
+        const oldTrackingRef =
+          url.searchParams.get("track") ||
+          url.searchParams.get("scan");
+
+        if (oldTrackingRef) {
+          return formatRefNo(oldTrackingRef);
+        }
+      } catch (error) {
+        // Ref No.-only QR values are not URLs.
+      }
+
+      const ppsMatch = textValue.match(/PPS-\d+/i);
+
+      if (ppsMatch) {
+        return formatRefNo(ppsMatch[0]);
+      }
+
+      return formatRefNo(textValue);
+    }
+
+    function findRecordByReference(reference) {
+      const normalizedReference = normalize(
+        formatRefNo(reference)
+      );
+
+      if (!normalizedReference) {
+        return null;
+      }
+
+      return (
+        state.records.find(record => {
+          return (
+            normalize(formatRefNo(record.refNo)) ===
+            normalizedReference
+          );
+        }) || null
+      );
+    }
+
+    async function openIncomingQrScan() {
+      if (state.incomingScanHandled) {
+        return;
+      }
+
+      state.incomingScanHandled = true;
+
+      const scannedReference =
+        await getAppsScriptUrlParameter("scan");
+
+      if (!scannedReference) {
+        return;
+      }
+
+      window.setTimeout(() => {
+        findAndOpenQrRecord(scannedReference);
+      }, 250);
+    }
+
+    function getAppsScriptUrlParameter(parameterName) {
+      const fallbackValue =
+        new URLSearchParams(window.location.search)
+          .get(parameterName) || "";
+
+      if (
+        typeof google === "undefined" ||
+        !google.script ||
+        !google.script.url ||
+        typeof google.script.url.getLocation !== "function"
+      ) {
+        return Promise.resolve(fallbackValue);
+      }
+
+      return new Promise(resolve => {
+        google.script.url.getLocation(location => {
+          const parameter =
+            location &&
+            location.parameter &&
+            location.parameter[parameterName]
+              ? location.parameter[parameterName]
+              : fallbackValue;
+
+          resolve(parameter || "");
+        });
+      });
+    }
+
+    function printQrCode() {
+      const record = state.currentQrRecord;
+      const container = document.getElementById("qrCodeContainer");
+
+      if (!record || !container) {
+        showError(new Error("No QR code is available for printing."));
+        return;
+      }
+
+      const canvas = container.querySelector("canvas");
+      const image = container.querySelector("img");
+      const qrImage =
+        canvas && typeof canvas.toDataURL === "function"
+          ? canvas.toDataURL("image/png")
+          : image
+            ? image.src
+            : "";
+
+      if (!qrImage) {
+        showError(new Error("The QR code has not finished loading."));
+        return;
+      }
+
+      const popup = window.open("", "_blank", "width=520,height=650");
+
+      if (!popup) {
+        Swal.fire({
+          icon: "warning",
+          title: "Pop-up Blocked",
+          text: "Please allow pop-ups to print the QR code."
+        });
+        return;
+      }
+
+      popup.document.open();
+      popup.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>QR ${escapeHtml(formatRefNo(record.refNo))}</title>
+          <style>
+            @page { size: A4 portrait; margin: 15mm; }
+            * { box-sizing: border-box; }
+            body {
+              margin: 0;
+              font-family: Arial, sans-serif;
+              text-align: center;
+              color: #000;
+            }
+            .sheet {
+              width: 90mm;
+              margin: 0 auto;
+              padding: 8mm;
+              border: .3mm solid #000;
+            }
+            img {
+              width: 55mm;
+              height: 55mm;
+              object-fit: contain;
+            }
+            .ref {
+              margin-top: 4mm;
+              font-size: 16pt;
+              font-weight: 800;
+            }
+            .label {
+              margin-top: 2mm;
+              font-size: 9pt;
+              font-weight: 700;
+            }
+            .status {
+              margin-top: 2mm;
+              font-size: 10pt;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="sheet">
+            <div class="label">DOCUMENT REF NO. QR CODE</div>
+            <img src="${escapeAttribute(qrImage)}" alt="Document QR Code">
+            <div class="ref">${escapeHtml(formatRefNo(record.refNo))}</div>
+            <div class="status">
+              Current Status: ${escapeHtml(record.status || "No Status")}
+            </div>
+          </div>
+          <script>
+            window.onload = function () {
+              window.print();
+            };
+          <\/script>
+        </body>
+        </html>
+      `);
+      popup.document.close();
+    }
+
+    function renderPagination(totalPages) {
+      const pagination = document.getElementById("pagination");
+
+      if (totalPages <= 1) {
+        pagination.innerHTML = "";
+        return;
+      }
+
+      const pages = getPaginationPages(state.currentPage, totalPages);
+
+      let html = `
+        <li class="page-item ${state.currentPage === 1 ? "disabled" : ""}">
+          <button class="page-link" onclick="changePage(${state.currentPage - 1})">
+            Previous
+          </button>
+        </li>
+      `;
+
+      pages.forEach(page => {
+        if (page === "...") {
+          html += `
+            <li class="page-item disabled">
+              <span class="page-link">…</span>
+            </li>
+          `;
+        } else {
+          html += `
+            <li class="page-item ${page === state.currentPage ? "active" : ""}">
+              <button class="page-link" onclick="changePage(${page})">${page}</button>
+            </li>
+          `;
+        }
+      });
+
+      html += `
+        <li class="page-item ${state.currentPage === totalPages ? "disabled" : ""}">
+          <button class="page-link" onclick="changePage(${state.currentPage + 1})">
+            Next
+          </button>
+        </li>
+      `;
+
+      pagination.innerHTML = html;
+    }
+
+    function getPaginationPages(current, total) {
+      if (total <= 7) {
+        return Array.from({ length: total }, (_, index) => index + 1);
+      }
+
+      if (current <= 4) {
+        return [1, 2, 3, 4, 5, "...", total];
+      }
+
+      if (current >= total - 3) {
+        return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
+      }
+
+      return [1, "...", current - 1, current, current + 1, "...", total];
+    }
+
+    function renderDashboard(stats) {
+      document.getElementById("statTotal").textContent = stats.total || 0;
+      document.getElementById("statForRouting").textContent = stats.forRouting || 0;
+      document.getElementById("statOnProcess").textContent = stats.onProcess || 0;
+      document.getElementById("statCompleted").textContent = stats.completed || 0;
+
+      const recent = [...state.records]
+        .sort((a, b) => Number(b.rowNumber) - Number(a.rowNumber))
+        .slice(0, 5);
+
+      const container = document.getElementById("recentRecords");
+
+      if (!recent.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fa-regular fa-folder-open d-block"></i>
+            <div class="fw-bold">No records yet</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Ref No.</th>
+                <th>Subject</th>
+                <th>Drafter</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${recent.map(record => `
+                <tr>
+                  <td class="fw-semibold">${escapeHtml(formatRefNo(record.refNo))}</td>
+                  <td>${escapeHtml(record.subject || "")}</td>
+                  <td>${escapeHtml(record.drafter || "")}</td>
+                  <td>
+                    <span class="status-badge ${getStatusClass(record.status)}">
+                      ${escapeHtml(record.status || "No Status")}
+                    </span>
+                  </td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function populateDrafterSelects() {
+      const options = state.drafters
+        .map(item => `
+          <option value="${escapeAttribute(item.name)}">
+            ${escapeHtml(item.name)}
+          </option>
+        `)
+        .join("");
+
+      const mainSelect = document.getElementById("drafter");
+      const editSelect = document.getElementById("editDrafter");
+      const filterSelect = document.getElementById("drafterFilter");
+      const columnFilterSelect = document.getElementById("columnDrafterFilter");
+
+      const currentMain = mainSelect.value;
+      const currentEdit = editSelect.value;
+      const currentFilter = filterSelect.value;
+      const currentColumnFilter = columnFilterSelect
+        ? columnFilterSelect.value
+        : "";
+
+      mainSelect.innerHTML = `<option value="">Select Drafter</option>${options}`;
+      editSelect.innerHTML = `<option value="">Select Drafter</option>${options}`;
+      filterSelect.innerHTML = `<option value="">All Drafters</option>${options}`;
+
+      if (columnFilterSelect) {
+        columnFilterSelect.innerHTML = `<option value="">All</option>${options}`;
+      }
+
+      mainSelect.value = currentMain;
+      editSelect.value = currentEdit;
+      filterSelect.value = currentFilter;
+
+      if (columnFilterSelect) {
+        columnFilterSelect.value = currentColumnFilter;
+      }
+    }
+
+    function populateSenderSelect() {
+      const options = state.senders
+        .map(item => `
+          <option value="${escapeAttribute(item.name)}">
+            ${escapeHtml(item.name)}
+          </option>
+        `)
+        .join("");
+
+      ROUTING_SENDER_FIELDS.forEach((field, index) => {
+        const select = document.getElementById(field.id);
+
+        if (!select) {
+          return;
+        }
+
+        const current = select.value;
+        select.innerHTML =
+          `<option value="">Select Sender's Name</option>` + options;
+
+        const senderNames = state.senders.map(item => item.name);
+        const preferredName = senderNames.find(
+          name => normalize(name) === normalize(field.defaultName)
+        );
+
+        if (current && senderNames.some(name => normalize(name) === normalize(current))) {
+          select.value = current;
+        } else if (preferredName) {
+          select.value = preferredName;
+        } else if (state.senders[index]) {
+          select.value = state.senders[index].name;
+        }
+      });
+    }
+
+    function renderSettings() {
+      const drafterList = document.getElementById("drafterSettingsList");
+      const senderList = document.getElementById("senderSettingsList");
+
+      drafterList.innerHTML = state.drafters.length
+        ? state.drafters.map(item => `
+            <div class="list-group-item">
+              <div>
+                <div class="fw-semibold">${escapeHtml(item.name)}</div>
+                <div class="small text-secondary">
+                  Added: ${escapeHtml(item.dateAdded || "—")}
+                </div>
+              </div>
+              <div class="btn-group btn-group-sm">
+                <button
+                  class="btn btn-outline-warning"
+                  onclick="editDrafterPrompt(${Number(item.rowNumber)})"
+                  title="Edit drafter"
+                >
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button
+                  class="btn btn-outline-danger"
+                  onclick="deleteDrafterPrompt(${Number(item.rowNumber)})"
+                  title="Delete drafter"
+                >
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          `).join("")
+        : `<div class="text-secondary py-3">No drafter available.</div>`;
+
+      senderList.innerHTML = state.senders.length
+        ? state.senders.map(item => `
+            <div class="list-group-item">
+              <div>
+                <div class="fw-semibold">${escapeHtml(item.name)}</div>
+                <div class="small text-secondary">
+                  Added: ${escapeHtml(item.dateAdded || "—")}
+                </div>
+              </div>
+              <div class="btn-group btn-group-sm">
+                <button
+                  class="btn btn-outline-warning"
+                  onclick="editSenderPrompt(${Number(item.rowNumber)})"
+                  title="Edit sender"
+                >
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button
+                  class="btn btn-outline-danger"
+                  onclick="deleteSenderPrompt(${Number(item.rowNumber)})"
+                  title="Delete sender"
+                >
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          `).join("")
+        : `<div class="text-secondary py-3">No sender available.</div>`;
+    }
+
+    async function addDrafterPrompt() {
+      const result = await Swal.fire({
+        title: "Add Drafter",
+        input: "text",
+        inputLabel: "Drafter Name",
+        inputPlaceholder: "Enter rank and complete name",
+        showCancelButton: true,
+        confirmButtonText: "Add",
+        inputValidator: value => !value.trim() ? "Drafter name is required." : undefined
+      });
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      await runSettingsAction(
+        "addDrafter",
+        { name: result.value.trim() },
+        "Adding drafter..."
+      );
+    }
+
+    async function editDrafterPrompt(rowNumber) {
+      const item = state.drafters.find(
+        drafter => Number(drafter.rowNumber) === Number(rowNumber)
+      );
+
+      if (!item) {
+        return;
+      }
+
+      const result = await Swal.fire({
+        title: "Edit Drafter",
+        input: "text",
+        inputValue: item.name,
+        inputLabel: "Drafter Name",
+        showCancelButton: true,
+        confirmButtonText: "Save",
+        inputValidator: value => !value.trim() ? "Drafter name is required." : undefined
+      });
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      await runSettingsAction(
+        "updateDrafter",
+        Number(rowNumber),
+        { name: result.value.trim() },
+        "Updating drafter..."
+      );
+    }
+
+    async function deleteDrafterPrompt(rowNumber) {
+      const item = state.drafters.find(
+        drafter => Number(drafter.rowNumber) === Number(rowNumber)
+      );
+
+      const result = await Swal.fire({
+        icon: "warning",
+        title: "Delete Drafter?",
+        text: item ? item.name : "",
+        showCancelButton: true,
+        confirmButtonText: "Delete",
+        confirmButtonColor: "#dc2626"
+      });
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      await runSettingsAction("deleteDrafter", Number(rowNumber), "Deleting drafter...");
+    }
+
+    async function addSenderPrompt() {
+      const result = await Swal.fire({
+        title: "Add Sender's Name",
+        input: "text",
+        inputLabel: "Sender's Name",
+        inputPlaceholder: "Enter sender's name",
+        showCancelButton: true,
+        confirmButtonText: "Add",
+        inputValidator: value => !value.trim() ? "Sender name is required." : undefined
+      });
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      await runSettingsAction(
+        "addSender",
+        { name: result.value.trim() },
+        "Adding sender..."
+      );
+    }
+
+    async function editSenderPrompt(rowNumber) {
+      const item = state.senders.find(
+        sender => Number(sender.rowNumber) === Number(rowNumber)
+      );
+
+      if (!item) {
+        return;
+      }
+
+      const result = await Swal.fire({
+        title: "Edit Sender's Name",
+        input: "text",
+        inputValue: item.name,
+        inputLabel: "Sender's Name",
+        showCancelButton: true,
+        confirmButtonText: "Save",
+        inputValidator: value => !value.trim() ? "Sender name is required." : undefined
+      });
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      await runSettingsAction(
+        "updateSender",
+        Number(rowNumber),
+        { name: result.value.trim() },
+        "Updating sender..."
+      );
+    }
+
+    async function deleteSenderPrompt(rowNumber) {
+      const item = state.senders.find(
+        sender => Number(sender.rowNumber) === Number(rowNumber)
+      );
+
+      const result = await Swal.fire({
+        icon: "warning",
+        title: "Delete Sender's Name?",
+        text: item ? item.name : "",
+        showCancelButton: true,
+        confirmButtonText: "Delete",
+        confirmButtonColor: "#dc2626"
+      });
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      await runSettingsAction("deleteSender", Number(rowNumber), "Deleting sender...");
+    }
+
+    async function runSettingsAction(functionName, ...args) {
+      let loadingText = "Saving...";
+
+      if (typeof args[args.length - 1] === "string") {
+        loadingText = args.pop();
+      }
+
+      showLoading(loadingText);
+
+      try {
+        const response = await gas(functionName, ...args);
+
+        await Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: response.message,
+          timer: 1300,
+          showConfirmButton: false
+        });
+
+        await refreshAllData();
+      } catch (error) {
+        showError(error);
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function openRoutingByRow(rowNumber) {
+      const record = state.records.find(
+        item => Number(item.rowNumber) === Number(rowNumber)
+      );
+
+      if (!record) {
+        showError(new Error("Record not found."));
+        return;
+      }
+
+      openRoutingModal(record);
+    }
+
+    function openRoutingModal(record) {
+      state.currentRoutingRecord = record;
+
+      setDefaultRoutingSenders();
+      refreshRoutingPreview();
+      routingModal.show();
+    }
+
+    function setDefaultRoutingSenders() {
+      const availableNames = state.senders.map(item => item.name);
+
+      ROUTING_SENDER_FIELDS.forEach((field, index) => {
+        const select = document.getElementById(field.id);
+
+        if (!select) {
+          return;
+        }
+
+        const selectedExists = availableNames.some(
+          name => normalize(name) === normalize(select.value)
+        );
+
+        if (select.value && selectedExists) {
+          return;
+        }
+
+        const preferredName = availableNames.find(
+          name => normalize(name) === normalize(field.defaultName)
+        );
+
+        if (preferredName) {
+          select.value = preferredName;
+        } else if (state.senders[index]) {
+          select.value = state.senders[index].name;
+        } else {
+          select.value = "";
+        }
+      });
+    }
+
+    function getRoutingSenders() {
+      return ROUTING_SENDER_FIELDS.map(
+        field => document.getElementById(field.id)?.value || ""
+      );
+    }
+
+    function refreshRoutingPreview() {
+      const record = state.currentRoutingRecord;
+
+      if (!record) {
+        return;
+      }
+
+      const senders = getRoutingSenders();
+      document.getElementById("routingPreview").innerHTML = `
+        <div class="routing-preview-shell">
+          ${buildRoutingFormMarkup(record, senders, true)}
+        </div>
+      `;
+
+      renderQrCode(
+        "routingPreviewQr",
+        buildQrValue(record),
+        58
+      );
+    }
+
+    function printCurrentRouting() {
+      const record = state.currentRoutingRecord;
+
+      if (!record) {
+        showError(new Error("No record selected for printing."));
+        return;
+      }
+
+      const senders = getRoutingSenders();
+      const popup = window.open("", "_blank", "width=1100,height=850");
+
+      if (!popup) {
+        Swal.fire({
+          icon: "warning",
+          title: "Pop-up Blocked",
+          text: "Please allow pop-ups to print the routing slip."
+        });
+        return;
+      }
+
+      popup.document.open();
+      popup.document.write(buildRoutingPrintHtml(record, senders));
+      popup.document.close();
+    }
+
+    function buildRoutingFormMarkup(record, senders, isPreview) {
+      const sender1 = senders[0] || "";
+      const sender2 = senders[1] || "";
+      const sender3 = senders[2] || "";
+      const sender4 = senders[3] || "";
+      const sender5 = senders[4] || "";
+      const wrapperClass = isPreview ? "routing-form-preview" : "routing-form-print";
+
+      return `
+        <div class="${wrapperClass}">
+          <div class="routing-header-tools">
+            <div class="routing-qr-wrap">
+              <div
+                id="${isPreview ? "routingPreviewQr" : "routingPrintQr"}"
+                class="routing-qr-code"
+              ></div>
+              <div>SCAN TO TRACK<br>AND UPDATE</div>
+            </div>
+
+            <div class="tracking-box">
+            <div class="tracking-row tracking-document-row">
+              <span>Document Tracking No.</span>
+              <span class="tracking-line">${escapeHtml(formatRefNo(record.refNo))}</span>
+            </div>
+            <div class="tracking-row">
+              <span>OORS:</span>
+              <span class="tracking-line"></span>
+            </div>
+            <div class="tracking-row">
+              <span>DRDO:</span>
+              <span class="tracking-line"></span>
+            </div>
+            <div class="tracking-row">
+              <span>DRDA:</span>
+              <span class="tracking-line"></span>
+            </div>
+            <div class="tracking-row">
+              <span>ORD:</span>
+              <span class="tracking-line"></span>
+            </div>
+            </div>
+          </div>
+
+          <div class="process-note">
+            (Please do not detach this routing form throughout the entire process)
+          </div>
+
+          <div class="subject-line">
+            SUBJECT: ${escapeHtml(record.subject || "")}
+          </div>
+
+          <table class="routing-main">
+            <colgroup>
+              <col style="width:64%">
+              <col style="width:36%">
+            </colgroup>
+
+            <tr>
+              <td class="title-cell">ROUTING AND ACTION FORM</td>
+              <td class="warning-cell">
+                DO NOT WRITE ON THIS FORM<br>
+                APPROVE/DISAPPROVAL/CONCURRENCE OR SIMILAR ACTION
+              </td>
+            </tr>
+
+            <tr>
+              <td class="route-panel">
+                <table class="nested-table routing-left">
+                  <colgroup>
+                    <col style="width:18%">
+                    <col style="width:17%">
+                    <col style="width:20%">
+                    <col style="width:21%">
+                    <col style="width:24%">
+                  </colgroup>
+                  <tr>
+                    <th>FROM</th>
+                    <th>TO</th>
+                    <th>DATE/TIME</th>
+                    <th>SENDER'S<br>NAME</th>
+                    <th>SIGNATURE</th>
+                  </tr>
+                  <tr>
+                    <td>Asst. Chief,<br>RPRMD</td>
+                    <td>C, RPRMD</td>
+                    <td></td>
+                    <td>${escapeHtml(sender1)}</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Section<br>Chief</td>
+                    <td>Asst. Chief,<br>RPRMD</td>
+                    <td></td>
+                    <td>${escapeHtml(sender2)}</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Chief Clerk</td>
+                    <td>Section<br>Chief</td>
+                    <td></td>
+                    <td>${escapeHtml(sender3)}</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Senior<br>Section<br>PNCO</td>
+                    <td>Chief Clerk</td>
+                    <td></td>
+                    <td>${escapeHtml(sender4)}</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Drafter</td>
+                    <td>Senior<br>Section<br>PNCO</td>
+                    <td></td>
+                    <td>${escapeHtml(sender5)}</td>
+                    <td></td>
+                  </tr>
+                </table>
+              </td>
+
+              <td class="action-panel">
+                <table class="nested-table routing-actions">
+                  <tr>
+                    <th colspan="2">
+                      PLEASE <span class="red-check">CHECK</span> REQUESTED ACTION(S):
+                    </th>
+                  </tr>
+                  <tr><td class="action-number">1</td><td>APPROVAL/SIGNATURE</td></tr>
+                  <tr><td class="action-number">2</td><td>APPROPRIATE STAFF ACTION</td></tr>
+                  <tr><td class="action-number">3</td><td>COMMENT/RECOMMENDATION</td></tr>
+                  <tr><td class="action-number">4</td><td>STUDY/INVESTIGATION</td></tr>
+                  <tr><td class="action-number">5</td><td>REPLY DIRECT TO WRITER</td></tr>
+                  <tr><td class="action-number">6</td><td>REWRITE/REPEAT</td></tr>
+                  <tr><td class="action-number">7</td><td>NOTATION/INFORMATION</td></tr>
+                  <tr><td class="action-number">8</td><td>SEE ME/CALL ME</td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td colspan="2" class="remarks-label">REMARKS:</td>
+            </tr>
+            <tr>
+              <td colspan="2" class="remarks-area">${escapeHtml(record.remarks || "")}</td>
+            </tr>
+            <tr>
+              <td colspan="2" class="drafter-line">
+                <strong>Drafter:</strong> ${escapeHtml(record.drafter || "")}
+              </td>
+            </tr>
+          </table>
+
+          <div class="td-line">T.D; ${escapeHtml(record.targetDate || "")}</div>
+        </div>
+      `;
+    }
+
+    function buildRoutingPrintHtml(record, senders) {
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Routing and Action Form ${escapeHtml(formatRefNo(record.refNo))}</title>
+          <style>
+            @page {
+              size: A4 portrait;
+              margin: 5mm;
+            }
+
+            * {
+              box-sizing: border-box;
+            }
+
+            html,
+            body {
+              margin: 0;
+              padding: 0;
+              color: #000;
+              background: #fff;
+              font-family: Arial, sans-serif;
+            }
+
+            body {
+              width: 210mm;
+              min-height: 297mm;
+            }
+
+            .routing-form-print {
+              width: 200mm;
+              min-height: 136mm;
+              margin: 0 auto;
+              padding: 1mm 2mm 0;
+              font-size: 8.5pt;
+            }
+
+            .routing-header-tools {
+              display: flex;
+              justify-content: flex-end;
+              align-items: flex-start;
+              gap: 2mm;
+            }
+
+            .routing-qr-wrap {
+              width: 18mm;
+              flex: 0 0 18mm;
+              text-align: center;
+              font-size: 5pt;
+              font-weight: 800;
+              line-height: 1.02;
+            }
+
+            .routing-qr-code {
+              width: 16mm;
+              height: 16mm;
+              margin: 0 auto .5mm;
+              display: grid;
+              place-items: center;
+            }
+
+            .routing-qr-code img,
+            .routing-qr-code canvas {
+              display: block;
+              width: 16mm !important;
+              height: 16mm !important;
+              margin: auto;
+            }
+
+            .tracking-box {
+              width: 64mm;
+              margin-left: 0;
+              font-size: 6.2pt;
+              line-height: 1.12;
+            }
+
+            .tracking-row {
+              display: grid;
+              grid-template-columns: 10mm 1fr;
+              gap: 1.5mm;
+              align-items: end;
+            }
+
+            .tracking-document-row {
+              grid-template-columns: max-content 1fr;
+              margin-bottom: .3mm;
+            }
+
+            .tracking-line {
+              min-height: 2.6mm;
+              border-bottom: .25mm solid #000;
+              color: #0645ad;
+              font-size: 6pt;
+            }
+
+            .process-note {
+              margin: 4mm 0 4mm 10mm;
+              font-size: 7.5pt;
+              font-style: italic;
+            }
+
+            .subject-line {
+              min-height: 5mm;
+              margin-bottom: .8mm;
+              font-size: 8.5pt;
+              font-weight: 700;
+            }
+
+            .routing-main {
+              width: 100%;
+              border-collapse: collapse;
+              table-layout: fixed;
+            }
+
+            .routing-main,
+            .routing-main td,
+            .routing-main th {
+              border: .25mm solid #000;
+            }
+
+            .routing-main td,
+            .routing-main th {
+              padding: 0;
+              vertical-align: middle;
+            }
+
+            .title-cell {
+              height: 13mm;
+              text-align: center;
+              font-size: 14pt;
+              font-weight: 800;
+              text-decoration: underline;
+            }
+
+            .warning-cell {
+              height: 13mm;
+              padding: 1mm 1.5mm !important;
+              font-size: 9.5pt;
+              font-weight: 500;
+              line-height: 1.02;
+              text-align: left;
+            }
+
+            .nested-table {
+              width: 100%;
+              height: 100%;
+              border-collapse: collapse;
+              table-layout: fixed;
+            }
+
+            .nested-table th,
+            .nested-table td {
+              border: .25mm solid #000;
+              padding: .45mm .7mm;
+              text-align: center;
+              line-height: 1.02;
+              font-size: 7.1pt;
+            }
+
+            .nested-table th {
+              height: 7.3mm;
+              font-weight: 700;
+            }
+
+            .routing-left td {
+              height: 8.3mm;
+              font-weight: 600;
+            }
+
+            .routing-left .blank-route td {
+              height: 7mm;
+              font-weight: 400;
+            }
+
+            .routing-actions th {
+              height: 7.3mm;
+              font-size: 6.8pt;
+            }
+
+            .routing-actions td {
+              height: 5.2mm;
+              padding: .2mm .8mm;
+              text-align: left;
+              font-size: 6.8pt;
+              font-weight: 600;
+            }
+
+            .routing-actions .action-number {
+              width: 7mm;
+              text-align: center;
+              font-weight: 500;
+            }
+
+            .red-check {
+              color: #c00000;
+              font-style: italic;
+            }
+
+            .remarks-label {
+              height: 5mm;
+              padding: .5mm 1.4mm !important;
+              font-weight: 700;
+              text-decoration: underline;
+              text-align: left;
+            }
+
+            .remarks-area {
+              height: 23mm;
+              padding: 1.2mm 1.5mm !important;
+              vertical-align: top !important;
+              white-space: pre-wrap;
+              text-align: left;
+            }
+
+            .drafter-line {
+              height: 5.2mm;
+              padding: .5mm 1.5mm !important;
+              text-align: left;
+              font-size: 7pt;
+              font-style: italic;
+            }
+
+            .td-line {
+              margin: .5mm 0 0 16mm;
+              font-size: 7pt;
+              font-style: italic;
+              font-weight: 700;
+            }
+
+            @media print {
+              html,
+              body {
+                width: 210mm;
+                min-height: 297mm;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                background: #fff;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+
+              .routing-form-print {
+                width: 200mm;
+                min-height: 136mm;
+                max-height: 140mm;
+                margin: 0 auto;
+                page-break-inside: avoid;
+                break-inside: avoid;
+                page-break-after: avoid;
+                transform: none;
+              }
+            }
+          </style>
+          <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"><\/script>
+        </head>
+        <body>
+          ${buildRoutingFormMarkup(record, senders, false)}
+
+          <script>
+            window.onload = function () {
+              const qrContainer = document.getElementById("routingPrintQr");
+              const qrText = ${JSON.stringify(buildQrValue(record))};
+
+              if (qrContainer && typeof QRCode !== "undefined") {
+                new QRCode(qrContainer, {
+                  text: qrText,
+                  width: 96,
+                  height: 96,
+                  colorDark: "#000000",
+                  colorLight: "#ffffff",
+                  correctLevel: QRCode.CorrectLevel.H
+                });
+              }
+
+              window.setTimeout(function () {
+                window.print();
+              }, 450);
+            };
+          <\/script>
+        </body>
+        </html>
+      `;
+    }
+
+    function getStatusClass(status) {
+      const value = normalize(status).replace(/\s+/g, "-");
+      const allowed = [
+        "pending",
+        "for-routing",
+        "on-process",
+        "forwarded",
+        "returned",
+        "completed"
+      ];
+
+      return allowed.includes(value) ? "status-" + value : "status-default";
+    }
+
+    function formatRefNo(value) {
+      const text = String(value == null ? "" : value).trim();
+      const ppsMatch = text.match(/^PPS-(\d+)$/i);
+
+      if (ppsMatch) {
+        return "PPS-" + String(Number(ppsMatch[1])).padStart(4, "0");
+      }
+
+      // Keep older numeric reference numbers readable without changing them.
+      if (/^\d+$/.test(text)) {
+        return String(Number(text)).padStart(4, "0");
+      }
+
+      return text;
+    }
+
+    function formatFileSize(bytes) {
+      if (!bytes) {
+        return "0 KB";
+      }
+
+      if (bytes < 1024 * 1024) {
+        return (bytes / 1024).toFixed(1) + " KB";
+      }
+
+      return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+    }
+
+    function normalize(value) {
+      return String(value == null ? "" : value)
+        .trim()
+        .toLowerCase();
+    }
+
+    function escapeHtml(value) {
+      return String(value == null ? "" : value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function escapeAttribute(value) {
+      return escapeHtml(value);
+    }
+
+    function nl2br(value) {
+      return escapeHtml(value).replace(/\n/g, "<br>");
+    }
+
+    function showLoading(text) {
+      document.getElementById("loadingText").textContent = text || "Please wait...";
+      document.getElementById("loadingOverlay").classList.add("show");
+    }
+
+    function hideLoading() {
+      document.getElementById("loadingOverlay").classList.remove("show");
+    }
+
+    function showError(error) {
+      hideLoading();
+
+      Swal.fire({
+        icon: "error",
+        title: "Something Went Wrong",
+        text: error && error.message ? error.message : String(error)
+      });
+    }
+  </script>
 </body>
 </html>
