@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+  <meta name="theme-color" content="#0f172a">
+  <title>PPS QR Scanner</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <style>
+    :root {
+      color-scheme: light;
+      --primary: #2563eb;
+      --dark: #0f172a;
+      --border: #dbe3ee;
+      --muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #f4f7fb;
+      color: #172033;
+      font-family: Arial, sans-serif;
+    }
+
+    .page {
+      width: min(720px, 100%);
+      min-height: 100vh;
+      margin: auto;
+      padding: max(14px, env(safe-area-inset-top))
+        14px
+        max(18px, env(safe-area-inset-bottom));
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, .08);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 16px;
+      color: #fff;
+      background: var(--dark);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .header p {
+      margin: 5px 0 0;
+      color: #cbd5e1;
+      font-size: 13px;
+    }
+
+    .body {
+      padding: 14px;
+    }
+
+    #reader {
+      width: 100%;
+      min-height: 300px;
+      background: #fff;
+      border: 8px solid var(--dark);
+      border-radius: 13px;
+      overflow: hidden;
+    }
+
+    #reader video {
+      width: 100% !important;
+      max-height: 68vh;
+      object-fit: cover;
+    }
+
+    #reader button,
+    #reader select,
+    #reader div,
+    #reader span {
+      font-size: 13px !important;
+    }
+
+    .status {
+      min-height: 24px;
+      margin: 10px 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    button,
+    input {
+      min-height: 44px;
+      border-radius: 9px;
+      font-size: 14px;
+    }
+
+    button {
+      border: 1px solid transparent;
+      padding: 9px 12px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .secondary {
+      background: #fff;
+      color: #172033;
+      border-color: #cbd5e1;
+    }
+
+    .success {
+      background: #15803d;
+      color: #fff;
+    }
+
+    .manual {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .manual label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .input-group {
+      display: grid;
+      grid-template-columns: 1fr auto;
+    }
+
+    .input-group input {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid #cbd5e1;
+      border-radius: 9px 0 0 9px;
+      padding: 9px 11px;
+      text-transform: uppercase;
+    }
+
+    .input-group button {
+      border-radius: 0 9px 9px 0;
+    }
+
+    .note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    #imageInput {
+      position: fixed;
+      left: -9999px;
+      opacity: 0;
+    }
+
+    #fileReader {
+      position: fixed;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+
+    @media (max-width: 520px) {
+      .page {
+        padding-left: 0;
+        padding-right: 0;
+        padding-top: 0;
+      }
+
+      .card {
+        min-height: 100vh;
+        border: 0;
+        border-radius: 0;
+      }
+
+      #reader {
+        min-height: 250px;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <section class="card">
+      <header class="header">
+        <h1>PPS Document QR Scanner</h1>
+        <p>Scan a QR containing a Ref No. such as PPS-0001.</p>
+      </header>
+
+      <div class="body">
+        <div id="reader"></div>
+
+        <div id="status" class="status" aria-live="polite">
+          Tap Start Camera and allow camera access.
+        </div>
+
+        <div class="controls">
+          <button class="primary" type="button" onclick="startScanner()">
+            Start Camera
+          </button>
+
+          <button class="secondary" type="button" onclick="stopScanner()">
+            Stop Camera
+          </button>
+
+          <button class="secondary" type="button" onclick="switchCamera()">
+            Switch Camera
+          </button>
+
+          <button class="success" type="button" onclick="openImagePicker()">
+            Take / Choose Photo
+          </button>
+        </div>
+
+        <input
+          id="imageInput"
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onchange="scanImage(this)"
+        >
+
+        <div id="fileReader"></div>
+
+        <div class="manual">
+          <label for="manualRef">Manual Ref No.</label>
+
+          <div class="input-group">
+            <input
+              id="manualRef"
+              placeholder="PPS-0001"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              onkeydown="if (event.key === 'Enter') submitManual();"
+            >
+            <button class="primary" type="button" onclick="submitManual()">
+              Open
+            </button>
+          </div>
+        </div>
+
+        <div class="note">
+          Camera access works only on HTTPS and must be allowed in the browser.
+          After scanning, this page returns to the PPS web app.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let scanner = null;
+    let fileScanner = null;
+    let cameras = [];
+    let selectedCameraIndex = 0;
+    let starting = false;
+    let completed = false;
+
+    const returnUrl =
+      new URLSearchParams(window.location.search).get("return") || "";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      window.setTimeout(startScanner, 250);
+    });
+
+    function setStatus(message, type) {
+      const element = document.getElementById("status");
+      element.textContent = message;
+      element.style.color =
+        type === "success"
+          ? "#15803d"
+          : type === "error"
+            ? "#b91c1c"
+            : "#64748b";
+    }
+
+    function scannerOptions() {
+      const options = { verbose: false };
+
+      if (
+        typeof Html5QrcodeSupportedFormats !== "undefined" &&
+        Html5QrcodeSupportedFormats.QR_CODE != null
+      ) {
+        options.formatsToSupport = [
+          Html5QrcodeSupportedFormats.QR_CODE
+        ];
+      }
+
+      return options;
+    }
+
+    function qrBox(width, height) {
+      const edge = Math.min(width, height);
+      const size = Math.max(170, Math.min(310, Math.floor(edge * .72)));
+      return { width: size, height: size };
+    }
+
+    async function loadCameras() {
+      try {
+        cameras = await Html5Qrcode.getCameras();
+      } catch (error) {
+        cameras = [];
+      }
+      return cameras;
+    }
+
+    function rearCameraFirst(list) {
+      const rearWords =
+        /back|rear|environment|world|traseira|trasera|arrière|hinten/i;
+
+      return [
+        ...list.filter(camera => rearWords.test(camera.label || "")),
+        ...list.filter(camera => !rearWords.test(camera.label || ""))
+      ];
+    }
+
+    async function startScanner() {
+      if (starting || scanner) {
+        return;
+      }
+
+      if (
+        !window.isSecureContext ||
+        !navigator.mediaDevices ||
+        typeof navigator.mediaDevices.getUserMedia !== "function"
+      ) {
+        setStatus(
+          "Live camera requires HTTPS and browser camera support. Use Take / Choose Photo.",
+          "error"
+        );
+        return;
+      }
+
+      if (typeof Html5Qrcode === "undefined") {
+        setStatus("Scanner library failed to load.", "error");
+        return;
+      }
+
+      starting = true;
+      completed = false;
+      setStatus("Starting camera…");
+
+      await loadCameras();
+      const ordered = rearCameraFirst(cameras);
+      const candidates = [];
+
+      if (ordered[selectedCameraIndex]) {
+        candidates.push(ordered[selectedCameraIndex].id);
+      }
+
+      candidates.push({ facingMode: { exact: "environment" } });
+      candidates.push({ facingMode: "environment" });
+
+      ordered.forEach(camera => {
+        if (!candidates.includes(camera.id)) {
+          candidates.push(camera.id);
+        }
+      });
+
+      candidates.push({ facingMode: "user" });
+
+      let finalError = null;
+
+      for (const candidate of candidates) {
+        try {
+          document.getElementById("reader").innerHTML = "";
+          const instance = new Html5Qrcode("reader", scannerOptions());
+
+          await instance.start(
+            candidate,
+            {
+              fps: 10,
+              qrbox: qrBox,
+              disableFlip: false
+            },
+            handleSuccess,
+            () => {}
+          );
+
+          scanner = instance;
+          starting = false;
+
+          const video = document.querySelector("#reader video");
+          if (video) {
+            video.setAttribute("playsinline", "");
+            video.setAttribute("webkit-playsinline", "");
+            video.muted = true;
+          }
+
+          setStatus(
+            "Camera active. Hold the QR code steady inside the box.",
+            "success"
+          );
+          return;
+        } catch (error) {
+          finalError = error;
+        }
+      }
+
+      starting = false;
+      scanner = null;
+
+      const message =
+        finalError && finalError.message
+          ? finalError.message
+          : "Camera could not be opened.";
+
+      setStatus(
+        message + " Use Take / Choose Photo or check camera permission.",
+        "error"
+      );
+    }
+
+    async function stopScanner() {
+      const activeScanner = scanner;
+      scanner = null;
+      starting = false;
+
+      if (!activeScanner) {
+        return;
+      }
+
+      try {
+        await activeScanner.stop();
+      } catch (error) {}
+
+      try {
+        await activeScanner.clear();
+      } catch (error) {}
+
+      document.getElementById("reader").innerHTML = "";
+      setStatus("Camera stopped.");
+    }
+
+    async function switchCamera() {
+      await stopScanner();
+      await loadCameras();
+
+      if (cameras.length > 1) {
+        selectedCameraIndex =
+          (selectedCameraIndex + 1) % cameras.length;
+      }
+
+      await startScanner();
+    }
+
+    function openImagePicker() {
+      const input = document.getElementById("imageInput");
+      input.value = "";
+      input.click();
+    }
+
+    async function scanImage(input) {
+      const file = input.files && input.files[0];
+
+      if (!file) {
+        return;
+      }
+
+      await stopScanner();
+      setStatus("Reading QR from image…");
+
+      try {
+        fileScanner = new Html5Qrcode(
+          "fileReader",
+          scannerOptions()
+        );
+
+        const result = await fileScanner.scanFile(file, true);
+        await handleSuccess(result);
+      } catch (error) {
+        setStatus(
+          "No QR detected. Retake the photo closer and keep the full QR visible.",
+          "error"
+        );
+      } finally {
+        if (fileScanner) {
+          try {
+            await fileScanner.clear();
+          } catch (error) {}
+        }
+
+        fileScanner = null;
+        input.value = "";
+      }
+    }
+
+    async function handleSuccess(value) {
+      if (completed) {
+        return;
+      }
+
+      const reference = extractReference(value);
+
+      if (!reference) {
+        setStatus("The QR does not contain a valid PPS Ref No.", "error");
+        return;
+      }
+
+      completed = true;
+      setStatus("Detected " + reference + ". Returning to PPS…", "success");
+      await stopScanner();
+
+      window.setTimeout(() => returnToApp(reference), 350);
+    }
+
+    function extractReference(value) {
+      const text = String(value || "").trim();
+      const match = text.match(/PPS-\d+/i);
+
+      if (match) {
+        return formatReference(match[0]);
+      }
+
+      if (/^\d+$/.test(text)) {
+        return formatReference(text);
+      }
+
+      return "";
+    }
+
+    function formatReference(value) {
+      const text = String(value || "").trim().toUpperCase();
+      const digits = text.replace(/\D/g, "");
+
+      if (!digits) {
+        return "";
+      }
+
+      return "PPS-" + digits.padStart(4, "0");
+    }
+
+    function submitManual() {
+      const reference = extractReference(
+        document.getElementById("manualRef").value
+      );
+
+      if (!reference) {
+        setStatus("Enter a valid Ref No., such as PPS-0001.", "error");
+        return;
+      }
+
+      returnToApp(reference);
+    }
+
+    function returnToApp(reference) {
+      if (!returnUrl) {
+        setStatus(
+          "Return URL is missing. Open this scanner from the PPS system.",
+          "error"
+        );
+        return;
+      }
+
+      try {
+        const destination = new URL(returnUrl);
+        destination.searchParams.set("scan", reference);
+        window.location.replace(destination.toString());
+      } catch (error) {
+        setStatus("The PPS return URL is invalid.", "error");
+      }
+    }
+  </script>
+</body>
+</html>
