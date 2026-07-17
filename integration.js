@@ -1,24 +1,11 @@
 // Frontend JavaScript - Integration with Google Apps Script
-// Replace YOUR_DEPLOYMENT_ID with your actual Google Apps Script deployment ID
+// Uses google.script.run when deployed as Google Apps Script web app
 
-const SCRIPT_URL = 'https://script.google.com/macros/d/YOUR_DEPLOYMENT_ID/usercopy';
+// ============================================================================
+// BACKEND API FUNCTIONS
+// ============================================================================
 
-// API Helper function
-async function callBackend(action, params = {}) {
-  try {
-    const response = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action, params })
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('Backend error:', error);
-    return { error: error.message };
-  }
-}
-
-// Alternative: Using google.script.run (when deployed as web app)
-function callBackendGAS(action, params = {}) {
+function callBackend(action, params = {}) {
   return new Promise((resolve, reject) => {
     google.script.run
       .withSuccessHandler(resolve)
@@ -34,7 +21,7 @@ function callBackendGAS(action, params = {}) {
 async function loadDashboardStats() {
   showLoading(true, 'Loading dashboard statistics...');
   try {
-    const stats = await callBackendGAS('getDashboardStats');
+    const stats = await callBackend('getDashboardStats');
     
     document.getElementById('statTotal').textContent = stats.total || 0;
     document.getElementById('statForRouting').textContent = stats.forRouting || 0;
@@ -55,7 +42,7 @@ async function loadDashboardStats() {
 async function loadRecordsTable() {
   showLoading(true, 'Loading records...');
   try {
-    const records = await callBackendGAS('getRecords');
+    const records = await callBackend('getRecords');
     displayRecordsTable(records);
   } catch (error) {
     console.error('Error loading records:', error);
@@ -143,7 +130,7 @@ async function submitNewRecord(formId) {
   
   showLoading(true, 'Adding record...');
   try {
-    const result = await callBackendGAS('addRecord', recordData);
+    const result = await callBackend('addRecord', recordData);
     
     if (result.success) {
       showAlert('success', 'Record added successfully!');
@@ -170,7 +157,7 @@ async function submitNewRecord(formId) {
 
 async function editRecord(recordId) {
   // Load record data and open edit modal
-  const records = await callBackendGAS('getRecords');
+  const records = await callBackend('getRecords');
   const record = records.find(r => r.ID === recordId);
   
   if (!record) {
@@ -207,7 +194,7 @@ async function saveEditedRecord() {
   
   showLoading(true, 'Updating record...');
   try {
-    const result = await callBackendGAS('updateRecord', { id: recordId, updates });
+    const result = await callBackend('updateRecord', { id: recordId, updates });
     
     if (result.success) {
       showAlert('success', 'Record updated successfully!');
@@ -234,7 +221,7 @@ function deleteRecordConfirm(recordId) {
 async function deleteRecord(recordId) {
   showLoading(true, 'Deleting record...');
   try {
-    const result = await callBackendGAS('deleteRecord', { id: recordId });
+    const result = await callBackend('deleteRecord', { id: recordId });
     
     if (result.success) {
       showAlert('success', 'Record deleted successfully!');
@@ -263,7 +250,7 @@ async function searchRecords(query) {
   
   showLoading(true, 'Searching records...');
   try {
-    const results = await callBackendGAS('searchRecords', { query });
+    const results = await callBackend('searchRecords', { query });
     displayRecordsTable(results);
   } catch (error) {
     console.error('Error searching records:', error);
@@ -277,8 +264,8 @@ async function filterByStatus(status) {
   showLoading(true, 'Filtering records...');
   try {
     const results = status ? 
-      await callBackendGAS('getRecordsByStatus', { status }) : 
-      await callBackendGAS('getRecords');
+      await callBackend('getRecordsByStatus', { status }) : 
+      await callBackend('getRecords');
     displayRecordsTable(results);
   } catch (error) {
     console.error('Error filtering records:', error);
@@ -295,7 +282,7 @@ async function filterByStatus(status) {
 async function exportRecordsCSV() {
   showLoading(true, 'Exporting records...');
   try {
-    const csv = await callBackendGAS('exportRecordsCSV');
+    const csv = await callBackend('exportRecordsCSV');
     
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
